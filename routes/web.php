@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AircraftController;
+use App\Http\Controllers\OpinionController;
 use App\Http\Controllers\UserController;
 
 /*
@@ -34,6 +35,11 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    // interactions
+    Route::get("/interactions", [OpinionController::class, "index"]);
+    Route::delete("/interactions", [OpinionController::class, "destroy"]);
+
+    // profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -42,18 +48,26 @@ Route::middleware('auth')->group(function () {
 // api
 Route::prefix("/api")->group(function () {
 
-    // aircraft
-    Route::controller(AircraftController::class)->group(function () {
-        Route::get("/aircraft", "index");
-        Route::get("/aircraft/{page}", "paginatedIndex");
-    });
+    // authenticated only
+    Route::middleware('auth')->group(function () {
+        // aircraft
+        Route::controller(AircraftController::class)->group(function () {
+            Route::get("/all-aircraft", "index");
+            Route::get("/all-aircraft/{page}", "paginatedIndex");
+            Route::get("/aircraft/{id}", "show");
+        });
 
-    // user
-    Route::controller(UserController::class)->group(function () {
-        Route::get("/users", "index");
-        Route::get("/users/{id}", "show");
-    });
+        // user
+        Route::controller(UserController::class)->group(function () {
+            Route::get("/users", "index");
+            Route::get("/users/{id}", "show");
+        });
 
+        // Actions
+        Route::controller(OpinionController::class)->group(function () {
+            Route::post("/opinions", "store");
+        });
+    });
 });
 
 require __DIR__ . '/auth.php';

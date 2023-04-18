@@ -5,10 +5,11 @@ import { get } from "@/api";
 
 function MapMover({ position }) {
     const map = useMap();
+    map.invalidateSize()
     map.setView(position, map.getZoom());
 }
 
-export default function Profile({ aircraft }) {
+export default function Profile({ aircraft, className = "", children }) {
 
     const [aircraftPos, setAircraftPos] = useState([aircraft.location_lat, aircraft.location_lng]);
     const [user, setUser] = useState({});
@@ -24,13 +25,13 @@ export default function Profile({ aircraft }) {
             setUser(res[0])
             // console.log(res[0]);
         }).catch((err) => {
-            console.error(err);
+            // console.error(err);
             setUser({ name: "Unknown" })
         })
     }
 
     return (
-        <div className="rounded-lg w-full max-w-screen-lg mx-10 overflow-scroll bg-op-card p-3 mb-5">
+        <div className={`rounded-lg w-full max-w-screen-lg mx-10 overflow-scroll bg-op-card p-3 mb-5 ${className}`}>
             <div>
                 <img className="rounded-lg" src={aircraft.featured_photo_url}></img>
             </div>
@@ -40,15 +41,19 @@ export default function Profile({ aircraft }) {
             </div>
             <div className="text-start p-10">
                 <ul>
-                    <li>Type: {aircraft.make} {aircraft.model}</li>
-                    <li>
-                        <span>Location:</span>
+                    <li className="text-center mb-10">
+                        <span className="text-xl">Type</span>
+                        <hr className="w-48 h-1 mx-auto bg-op-primary border-0 rounded my-3" />
+                        <span>{aircraft.make} {aircraft.model}</span></li>
+                    <li className="text-center mb-10">
+                        <span className="text-xl">Location:</span>
+                        <hr className="w-48 h-1 mx-auto bg-op-primary border-0 rounded my-3" />
                         <div className="h-96">
                             <MapContainer
                                 center={aircraftPos}
                                 zoom={13}
-                                scrollWheelZoom={true}
-                                style={{ height: "100%", width: "100%", margin: "auto", color: "#000" }}>
+                                scrollWheelZoom={false}
+                                style={{ height: "100%", width: "100%", margin: "auto", color: "#000", zIndex: "40" }}>
                                 <TileLayer
                                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -62,9 +67,14 @@ export default function Profile({ aircraft }) {
                             </MapContainer>
                         </div>
                     </li>
-                    <li className="mt-3">Comments:</li>
+                    <li className="text-center mb-10 mt-3">
+                        <span className="text-xl">Comments:</span>
+                        <hr className="w-48 h-1 mx-auto bg-op-primary border-0 rounded my-3" />
+
+                    </li>
                 </ul>
             </div>
+            { children }
         </div>
     )
 }

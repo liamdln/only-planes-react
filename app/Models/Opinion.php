@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Like extends Model
+class Opinion extends Model
 {
     use HasFactory;
 
@@ -20,8 +20,8 @@ class Like extends Model
     ];
 
     /**
-     * Creates a one-to-one relationship between User and Likes.
-     * A like belongs to a user.
+     * Creates a one-to-one relationship between User and Opinions.
+     * An opinion belongs to a user.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo Inverse side of 1:1 relationship.
      */
@@ -31,8 +31,8 @@ class Like extends Model
     }
 
     /**
-     * Creates a one-to-one relationship between Aircraft and Likes.
-     * A like belongs to an aircraft.
+     * Creates a one-to-one relationship between Aircraft and Opinions.
+     * An opinion belongs to an aircraft.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo Inverse side of 1:1 relationship.
      */

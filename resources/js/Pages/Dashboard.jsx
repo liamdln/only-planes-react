@@ -3,11 +3,10 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import Profile from "@/Components/Profile";
 import { UserProvider } from "@/Contexts/UserContext";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { get } from "@/api";
+import { get, post } from "@/api";
 import { Head } from '@inertiajs/react';
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { UserContext } from "@/Contexts/UserContext";
 
 const MAX_AIRCRAFT_PER_REQ = 5;
 const MIN_AIRCRAFT_RES_PAGE = 1;
@@ -23,7 +22,7 @@ export default function Dashboard({ auth }) {
     useEffect(() => {
         setLoading(true);
         setAircraftList([]);
-        get(`/api/aircraft/${aircraftResPage}?avoid-user=${auth.user.id}`).then((res) => {
+        get(`/api/all-aircraft/${aircraftResPage}?avoid-user=${auth.user.id}`).then((res) => {
             // console.log(res);
             if (res.length < 1) {
                 Swal.fire({
@@ -68,6 +67,18 @@ export default function Dashboard({ auth }) {
         }
     }
 
+    const postAction = async (opinion, aircraftId) => {
+        const url = "/api/opinions";
+        await post(url, { userId: auth.user.id, aircraftId, opinion }).then(() => nextAircraft()).catch(() => {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: `Could not ${opinion} the aircraft.`,
+                footer: "If this continues, please contact the web administrator.",
+            })
+        })
+    }
+
     if (aircraftList.length < 1 && !loading) {
         return (
             <UserProvider user={auth.user}>
@@ -91,7 +102,7 @@ export default function Dashboard({ auth }) {
                 <Head title="Dashboard" />
                 {/* height of div: 100vh - navbar height - navbar bottom margin */}
                 <div className="flex justify-center" style={{ height: "calc(100vh - 64px - 20px)" }}>
-                    <ActionButton type="dislike" onClick={() => nextAircraft()}></ActionButton>
+                    <ActionButton type="dislike" onClick={() => postAction("dislike", aircraftList[currentAircraftIndex].id)}></ActionButton>
                     {loading
                         ?
                         <div className="max-w-screen-lg w-full flex justify-center items-center">
@@ -107,7 +118,7 @@ export default function Dashboard({ auth }) {
                         :
                         <Profile
                             aircraft={aircraftList[currentAircraftIndex]}></Profile>}
-                    <ActionButton type="like" onClick={() => nextAircraft()}></ActionButton>
+                    <ActionButton type="like" onClick={() => postAction("like", aircraftList[currentAircraftIndex].id)}></ActionButton>
                 </div>
             </AuthenticatedLayout>
         </UserProvider>

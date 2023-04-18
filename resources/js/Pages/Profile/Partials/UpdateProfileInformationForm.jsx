@@ -17,10 +17,14 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
         e.preventDefault();
 
         patch(route('profile.update'));
+
+        // console.log(e.target.name.value);
+        user.name = e.target.name.value;
+        user.email = e.target.email.value;
     };
 
     return (
-        <section className={className}>
+        <section className={className + " text-gray-950"}>
             <header>
                 <h2 className="text-lg font-medium text-gray-900">Profile Information</h2>
 

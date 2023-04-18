@@ -4,9 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Like;
+use App\Models\Opinion;
 
-class LikeSeeder extends Seeder
+class OpinionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,6 +15,6 @@ class LikeSeeder extends Seeder
     {
         // create 100 like relationships
         $numberOfLikes = 100;
-        Like::factory($numberOfLikes)->create();
+        Opinion::factory($numberOfLikes)->create();
     }
 }

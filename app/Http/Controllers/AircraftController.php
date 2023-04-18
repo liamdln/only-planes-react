@@ -32,8 +32,17 @@ class AircraftController extends Controller
 
         $avoidUserId = $request->query("avoid-user");
 
+        $aircraftWithUserOpinions = DB::table("opinions")->select("aircraft_id")->where("user_id", "=", $avoidUserId);
+
         // get the aircraft
-        $aircraft = DB::table("aircraft")->select("*")->where("user_id", "!=", $avoidUserId)->offset($numAircraftPerReq * ($page - 1))->limit($numAircraftPerReq)->get();
+        $aircraft = DB::table("aircraft")
+        ->select("*")
+        ->where("user_id", "!=", $avoidUserId)
+        ->whereNotIn("id", $aircraftWithUserOpinions)
+        ->offset($numAircraftPerReq * ($page - 1))
+        ->limit($numAircraftPerReq)
+        ->inRandomOrder()
+        ->get();
         return json_decode($aircraft);
     }
 

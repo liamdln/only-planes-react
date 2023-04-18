@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('likes', function (Blueprint $table) {
+        Schema::create('opinions', function (Blueprint $table) {
             $table->id();
             $table->foreignId("user_id")->references("id")->on("users")->onDelete("cascade")->onUpdate("cascade");
             $table->foreignId("aircraft_id")->references("id")->on("aircraft")->onDelete("cascade")->onUpdate("cascade");
             $table->unique(["user_id", "aircraft_id"]);
+            $table->string("opinion");
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('likes');
+        Schema::dropIfExists('opinions');
     }
 };

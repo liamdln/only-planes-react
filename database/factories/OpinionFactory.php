@@ -5,9 +5,9 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Like>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Opinion>
  */
-class LikeFactory extends Factory
+class OpinionFactory extends Factory
 {
 
     // private $compositeKey = [];
@@ -25,11 +25,13 @@ class LikeFactory extends Factory
         // } while(in_array(array($user_id, $aircraft_id), $this->compositeKey));
 
         // array_push($this->compositeKey, array($user_id, $aircraft_id));
+        // $opinions = ["like", "dislike"];
 
         // user_id and aircraft_id injected by DatabaseSeeder.php
         return [
             // "user_id" => $user_id,
             // "aircraft_id" => $aircraft_id,
+            // "opinion" => array_rand(array $opinions, int $num = 1)
         ];
     }
 }

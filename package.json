@@ -20,6 +20,7 @@
     },
     "dependencies": {
         "leaflet": "^1.9.3",
+        "moment": "^2.29.4",
         "react-leaflet": "^4.2.1",
         "sweetalert2": "^11.7.3"
     }

@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\Aircraft;
 use App\Models\Photo;
 use App\Models\Comment;
-use App\Models\Like;
+use App\Models\Opinion;
 
 class DatabaseSeeder extends Seeder
 {
@@ -35,13 +35,9 @@ class DatabaseSeeder extends Seeder
                     Comment::factory(fake()->randomDigitNotZero())->create(["author_id" => $user->id, "aircraft_id" => $aircraft->id]);
                 }
 
-                // should we like this aircraft (this includes some bias)?
-                // random numbers 0 - 99
-                $likeProbabilityRange = fake()->randomNumber(2, false);
-                // about 70% probability of liking an aircraft
-                if ($likeProbabilityRange > 60) {
-                    Like::factory(1)->create(["user_id" => $user->id, "aircraft_id" => $aircraft->id]);
-                }
+                // should we like this aircraft?
+                $opinions = ["like", "dislike"];
+                Opinion::factory(1)->create(["user_id" => $user->id, "aircraft_id" => $aircraft->id, "opinion" => $opinions[array_rand($opinions, 1)]]);
             });
         });
     }
