@@ -19,8 +19,11 @@ export default function AddAircraftModal({ visibility, setVisibility }) {
         lng: 0,
     })
     const [aircraftImage, setAircraftImage] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const handleAircraftUpload = async () => {
+
+        setLoading(true);
 
         const formData = new FormData();
         formData.append(aircraftImageTag, aircraftImage);
@@ -46,9 +49,18 @@ export default function AddAircraftModal({ visibility, setVisibility }) {
         }
 
         await post("/api/aircraft/create", formData).then(async (res) => {
-            console.log(res)
+            setLoading(false);
+            Swal.fire({
+                icon: "success",
+                text: "Aircraft has been added.",
+            })
         }).catch((err) => {
-            console.error(err);
+            setLoading(false);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "There was an error adding this aircraft. Ensure it does not already exist.",
+            })
         })
 
     }

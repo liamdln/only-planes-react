@@ -101,7 +101,7 @@ class AircraftController extends Controller
                 "model" => $model,
                 "location_lat" => $lat,
                 "location_lng" => $lng,
-                "featured_photo_url" => "/resources" . "/" . $imageName,
+                "featured_photo_url" => "/images" . "/" . $imageName,
                 "user_id" => $user->id,
                 "created_at" => date("Y-m-d H:i:s")
             ]);

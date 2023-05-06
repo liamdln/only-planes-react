@@ -9,7 +9,7 @@ import { UserContext } from "@/Contexts/UserContext";
 import Modal from "@/Components/Modal";
 import Profile from "@/Components/Profile";
 
-export default function ActionCard({ aircraft, actionDate, className = "", removeAircraft }) {
+export default function ActionCard({ aircraft, actionDate, className = "", removeAircraft, showActionDate = true, allowRemoval = true }) {
 
     moment().local("en-gb");
     const [showModal, setShowModal] = useState(false);
@@ -75,10 +75,19 @@ export default function ActionCard({ aircraft, actionDate, className = "", remov
             <div className={className + "bg-op-card w-3/12 text-center pb-3 rounded-md"}>
                 <img src={aircraft.featured_photo_url} className="w-fit rounded-md" />
                 <p className="uppercase my-3 text-xl">{aircraft.reg}</p>
-                <p className="mb-3">Liked {moment(actionDate).calendar()}</p>
+                {showActionDate ?
+                    <p className="mb-3">Liked {moment(actionDate).calendar()}</p>
+                    :
+                    <></>
+                }
                 <div className="flex gap-3 justify-center">
                     <PrimaryButtonEvent onClick={() => { viewAircraft(aircraft.id) }}>View</PrimaryButtonEvent>
-                    <DangerButtonEvent onClick={() => { deleteOpinion(aircraft.id, aircraft.reg) }}>Remove</DangerButtonEvent>
+                    {allowRemoval ?
+                        <DangerButtonEvent onClick={() => { deleteOpinion(aircraft.id, aircraft.reg) }}>Remove</DangerButtonEvent>
+                        :
+                        <></>
+                    }
+
                 </div>
             </div>
         </>

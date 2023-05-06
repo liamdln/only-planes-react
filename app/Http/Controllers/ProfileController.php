@@ -7,6 +7,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -60,4 +61,20 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    public function getUserProfile(int $user_id) {
+        $user = DB::table("users")->select(["name"])->where("id", "=", $user_id)->get();
+
+        if ($user->isEmpty()) {
+            abort(404);
+        }
+
+        $user_aircraft = DB::table("aircraft")->select("*")->where("user_id", "=", $user_id)->get();
+        return Inertia::render("User", [
+            "userDetails" => $user[0],
+            "userAircraft" => $user_aircraft,
+        ]);
+
+    }
+
 }
