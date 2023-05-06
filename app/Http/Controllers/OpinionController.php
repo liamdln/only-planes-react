@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -90,12 +91,12 @@ class OpinionController extends Controller
      */
     public function destroy(Request $request)
     {
-        $userId = $request->query("userId");
+        // $userId = $request->query("userId");
         $aircraftId = $request->query("aircraftId");
 
         DB::table("opinions")
             ->select("id")
-            ->where("user_id", "=", $userId)
+            ->where("user_id", "=", Auth::user()->id)
             ->where("aircraft_id", "=", $aircraftId)
             ->delete();
     }

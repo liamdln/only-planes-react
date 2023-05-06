@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Storage;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -21,7 +25,8 @@ class AircraftController extends Controller
     /**
      * Display a paginated listing of the resource
      */
-    public function paginatedIndex(Request $request, int $page) {
+    public function paginatedIndex(Request $request, int $page)
+    {
         // number of aircraft to display at once
         $numAircraftPerReq = 5;
 
@@ -36,13 +41,13 @@ class AircraftController extends Controller
 
         // get the aircraft
         $aircraft = DB::table("aircraft")
-        ->select("*")
-        ->where("user_id", "!=", $avoidUserId)
-        ->whereNotIn("id", $aircraftWithUserOpinions)
-        ->offset($numAircraftPerReq * ($page - 1))
-        ->limit($numAircraftPerReq)
-        ->inRandomOrder()
-        ->get();
+            ->select("*")
+            ->where("user_id", "!=", $avoidUserId)
+            ->whereNotIn("id", $aircraftWithUserOpinions)
+            ->offset($numAircraftPerReq * ($page - 1))
+            ->limit($numAircraftPerReq)
+            ->inRandomOrder()
+            ->get();
         return json_decode($aircraft);
     }
 
@@ -59,7 +64,56 @@ class AircraftController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        // https://stackoverflow.com/questions/67227154/upload-image-in-laravel-8-api
+
+        // dd($request->all());
+
+        $reg = $request->registration;
+        $make = $request->make;
+        $model = $request->model;
+        $lat = $request->lat;
+        $lng = $request->lng;
+
+        $request->validate([
+            "aircraft_image" => "required|image|mimes:png,jpg,jpeg|max:512000"
+        ]);
+
+        if (!$reg || !$make || !$model || !$lat || !$lng) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Not all data was sent with the request."
+            ], 400);
+        }
+
+        try {
+
+            $imageName = uniqid("aircraft-") . "." . $request->aircraft_image->extension();
+            $request->aircraft_image->storeAs("images", $imageName);
+            $request->aircraft_image->move(public_path("images"), $imageName);
+            // $request->aircraft_image->storeAs("aircraft_images", $imageName);
+
+            $user = Auth::user();
+
+            DB::table("aircraft")->insert([
+                "reg" => $reg,
+                "make" => $make,
+                "model" => $model,
+                "location_lat" => $lat,
+                "location_lng" => $lng,
+                "featured_photo_url" => "/resources" . "/" . $imageName,
+                "user_id" => $user->id,
+                "created_at" => date("Y-m-d H:i:s")
+            ]);
+            return response()->json([
+                "status" => "success",
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Could not create aircraft."
+            ], 500);
+        }
     }
 
     /**

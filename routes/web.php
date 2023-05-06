@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AircraftController;
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\OpinionController;
 use App\Http\Controllers\UserController;
 
@@ -45,6 +46,20 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// files
+Route::prefix("/resources")->group(function () {
+
+    Route::middleware('auth')->group(function () {
+
+        Route::controller(ImageController::class)->group(function() {
+            // Route::get("/{name}", "getImage");
+            Route::post("/upload", "store");
+        });
+
+    });
+
+});
+
 // api
 Route::prefix("/api")->group(function () {
 
@@ -55,6 +70,7 @@ Route::prefix("/api")->group(function () {
             Route::get("/all-aircraft", "index");
             Route::get("/all-aircraft/{page}", "paginatedIndex");
             Route::get("/aircraft/{id}", "show");
+            Route::post("/aircraft/create", "store");
         });
 
         // user

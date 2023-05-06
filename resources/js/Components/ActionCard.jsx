@@ -30,7 +30,7 @@ export default function ActionCard({ aircraft, actionDate, className = "", remov
             denyButtonColor: "#00C853"
         }).then(async (response) => {
             if (response.isConfirmed) {
-                await httpDelete(`/interactions?userId=${user.id}&aircraftId=${aircraftId}`).then(() => {
+                await httpDelete(`/interactions?aircraftId=${aircraftId}`).then(() => {
                     removeAircraft(aircraftId)
                 }).catch((err) => {
                     console.error(err);

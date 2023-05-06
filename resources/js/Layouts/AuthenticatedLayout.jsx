@@ -6,11 +6,7 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link } from '@inertiajs/react';
 import NavButton from "@/Components/NavButton";
 import { UserContext } from "@/Contexts/UserContext";
-import Modal from "@/Components/Modal";
-import DangerButtonEvent from "@/Components/DangerButtonEvent";
-import InputLabel from "@/Components/InputLabel";
-import TextInput from "@/Components/TextInput";
-import PrimaryButtonEvent from "@/Components/PrimaryButtonEvent";
+import AddAircraftModal from "@/Components/AddAircraftModal";
 
 export default function Authenticated({ children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -19,64 +15,7 @@ export default function Authenticated({ children }) {
 
     return (
         <>
-            <Modal show={showAddAircraftModal}>
-                <div className="bg-op-card p-5 text-center">
-                    <h1 className="text-white text-xl">Add Aircraft</h1>
-                    <hr className="w-48 h-1 mx-auto bg-op-primary border-0 rounded my-3" />
-                    <div className="text-start pb-3">
-                        <InputLabel htmlFor="reg" className="text-white">Registration</InputLabel>
-                        <TextInput
-                            id="reg"
-                            required
-                            className="w-full mt-1 block"
-                        />
-                        <div className="flex my-3 gap-3">
-                            <div>
-                                <InputLabel htmlFor="make" className="text-white">Make</InputLabel>
-                                <TextInput
-                                    id="make"
-                                    required
-                                    className="mt-1 block w-full"
-                                />
-                            </div>
-                            <div>
-                                <InputLabel htmlFor="model" className="text-white">Model</InputLabel>
-                                <TextInput
-                                    id="model"
-                                    required
-                                    className="mt-1 block w-full"
-                                />
-                            </div>
-                        </div>
-                        <div className="flex mb-3 gap-3">
-                            <div>
-                                <InputLabel htmlFor="lat" className="text-white">Latitude</InputLabel>
-                                <TextInput
-                                    id="lat"
-                                    required
-                                    className="mt-1 block w-full"
-                                    type="number"
-                                    step="0.01"
-                                />
-                            </div>
-                            <div>
-                                <InputLabel htmlFor="lng" className="text-white">Longitude</InputLabel>
-                                <TextInput
-                                    id="lng"
-                                    required
-                                    className="mt-1 block w-full"
-                                    type="number"
-                                    step="0.01"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex gap-3 justify-center">
-                        <PrimaryButtonEvent>Add</PrimaryButtonEvent>
-                        <DangerButtonEvent onClick={() => setShowAddAircraftModal(false)}>Close</DangerButtonEvent>
-                    </div>
-                </div>
-            </Modal>
+            <AddAircraftModal visibility={showAddAircraftModal} setVisibility={setShowAddAircraftModal} />
             <div className="text-white min-h-screen bg-op-darkblue">
                 <nav className="mb-5">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
