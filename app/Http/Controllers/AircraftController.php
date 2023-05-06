@@ -151,9 +151,10 @@ class AircraftController extends Controller
         $aircraftId = $request->query("aircraftId");
         $aircraft = DB::table("aircraft")->select("user_id")->where("id", "=", $aircraftId);
         $aircraft_owner = $aircraft->get();
-        $requestee_power = DB::table("users")->select("permission_power")->where("id", "=", $user_id)->get();
+        $requestee_role = DB::table("users")->select("role")->where("id", "=", $user_id)->get();
 
-        if ($aircraft_owner[0]->user_id == $user_id || $requestee_power[0]->permission_power >= 100) {
+        // ensure user is an admin
+        if ($aircraft_owner[0]->user_id == $user_id || $requestee_role[0]->role == "Admin") {
             $aircraft->delete();
 
             return response()->json([

@@ -31,9 +31,10 @@ class ProfileController extends Controller
     public function edit(Request $request, int $userId): Response
     {
 
-        $currentUserPower = DB::table("users")->select("permission_power")->where("id", "=", $request->user()->id)->get();
+        $current_user_role = DB::table("users")->select("role")->where("id", "=", $request->user()->id)->get();
 
-        if ($request->user()->id == $userId || $currentUserPower[0]->permission_power >= 100) {
+        // ensure user is admin
+        if ($request->user()->id == $userId || $current_user_role[0]->role == "Admin") {
             $user = DB::table("users")->select(["name", "email", "id"])->where("id", "=", $userId)->get();
 
             if ($user->isEmpty()) {
@@ -56,7 +57,8 @@ class ProfileController extends Controller
         $id = $request->input("id");
         $name = $request->input("name");
         $email = $request->input("email");
-        $requestee_power = DB::table("users")->select("permission_power")->where("id", "=", $request->user()->id)->get();
+        $role = $request->input("role");
+        $requestee_role = DB::table("users")->select("role")->where("id", "=", $request->user()->id)->get();
 
         if (!$name || !$email || !$id) {
             return response()->json([
@@ -65,8 +67,9 @@ class ProfileController extends Controller
             ], 400);
         }
 
-        if ($requestee_power[0]->permission_power >= 100 || $request->user()->id == $id) {
-            $updatedUser = DB::table("users")->where("id", $id)->update(["name" => $name, "email" => $email]);
+        // ensure user is admin
+        if ($requestee_role[0]->role == "Admin" || $request->user()->id == $id) {
+            $updatedUser = DB::table("users")->where("id", $id)->update(["name" => $name, "email" => $email, "role" => $role]);
 
             if ($updatedUser < 1) {
                 return response("Nothing modified.", 304);

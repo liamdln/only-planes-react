@@ -76,17 +76,18 @@ class UserController extends Controller
             ], 400);
         }
 
-        $current_user_power = DB::table("users")->select("permission_power")->where("id", "=", $request->user()->id)->get();
-        $user = DB::table("users")->select(["id", "permission_power"])->where("id", "=", $id);
+        $current_user_power = DB::table("users")->select("role")->where("id", "=", $request->user()->id)->get();
+        $user = DB::table("users")->select(["id", "role"])->where("id", "=", $id);
 
-        if ($user->get()[0]->permission_power >= 100) {
+        // ensure user is admin
+        if ($user->get()[0]->role == "Admin") {
             return response()->json([
                 "status" => "error",
                 "message" => "Cannot delete an admin."
             ], 400);
         }
 
-        if ($current_user_power[0]->permission_power >= 100) {
+        if ($current_user_power[0]->role == "Admin") {
             $user->delete();
             return response()->json([
                 "status" => "success",

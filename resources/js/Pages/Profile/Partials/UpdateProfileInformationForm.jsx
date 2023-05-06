@@ -1,16 +1,15 @@
-import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import { Transition } from '@headlessui/react';
 import { put } from "@/api";
 import Swal from "sweetalert2";
 import { useState } from "react";
 
-export default function UpdateProfileInformation({ className = '', user }) {
+export default function UpdateProfileInformation({ className = '', user, loggedInUser }) {
 
     const [userDetails, setUserDetails] = useState({ name: user.name, email: user.email });
     const [loading, setLoading] = useState(false);
+    const [role, setRole] = useState(user.role || "");
 
     const submit = async (e) => {
         e.preventDefault();
@@ -18,7 +17,7 @@ export default function UpdateProfileInformation({ className = '', user }) {
         // console.log(e.target.name.value);
         setLoading(true);
 
-        await put(`/api/profile/edit/${user.id}`, { id: user.id, name: userDetails.name, email: userDetails.email }).then((res) => {
+        await put(`/api/profile/edit/${user.id}`, { id: user.id, name: userDetails.name, email: userDetails.email, role: role }).then((res) => {
             Swal.fire({
                 icon: "success",
                 text: "User has been updated."
@@ -82,6 +81,17 @@ export default function UpdateProfileInformation({ className = '', user }) {
                         required
                         autoComplete="username"
                     />
+
+                </div>
+
+                <div hidden={ loggedInUser.id === user.id || loggedInUser.role !== "Admin" }>
+                    <InputLabel htmlFor="role" value="Role" />
+                    <select id="countries"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                        onChange={(e) => setRole(e.target.value)}>
+                        <option selected={role === "Member"} value="Member">Member</option>
+                        <option selected={role === "Admin"} value="Admin">Admin</option>
+                    </select>
 
                 </div>
 

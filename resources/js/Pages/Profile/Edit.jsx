@@ -7,8 +7,6 @@ import DeleteUser from "./Partials/DeleteUser";
 
 export default function EditProfile({ auth, user = {} }) {
 
-
-
     return (
         <UserProvider user={auth.user}>
             <AuthenticatedLayout>
@@ -20,6 +18,7 @@ export default function EditProfile({ auth, user = {} }) {
                             <UpdateProfileInformationForm
                                 className="max-w-xl"
                                 user={user}
+                                loggedInUser={auth.user}
                             />
                         </div>
 

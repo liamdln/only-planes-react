@@ -3,7 +3,6 @@ import PrimaryButtonEvent from "@/Components/PrimaryButtonEvent";
 import { UserProvider } from "@/Contexts/UserContext";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { httpDelete } from "@/api";
-import { ADMIN_POWER } from "@/utils/permissions";
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
@@ -14,7 +13,7 @@ export default function UserProfile({ auth, userDetails, userAircraft }) {
     const [aircraftProfiles, setAircraftProfiles] = useState(userAircraft || []);
 
     useEffect(() => {
-        setAllowRemoval(auth.user.permission_power >= ADMIN_POWER || auth.user.id === userDetails.id);
+        setAllowRemoval(auth.user.role === "Admin" || auth.user.id === userDetails.id);
     }, [userDetails]);
 
     const deleteAircraft = async (aircraftId, aircraftReg) => {
@@ -55,7 +54,7 @@ export default function UserProfile({ auth, userDetails, userAircraft }) {
                             <p className="uppercase text-5xl mb-1">{userDetails.name}</p>
                         </div>
                         <div className="self-center">
-                            {auth.user.permission_power >= ADMIN_POWER || auth.user.id === userDetails.id ?
+                            {auth.user.role === "Admin" || auth.user.id === userDetails.id ?
                                 <PrimaryButtonEvent onClick={() => document.location.href = `/profile/edit/${userDetails.id}`}>Edit Profile</PrimaryButtonEvent>
                                 :
                                 <></>
