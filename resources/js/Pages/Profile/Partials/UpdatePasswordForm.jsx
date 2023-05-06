@@ -1,39 +1,51 @@
-import { useRef } from 'react';
-import InputError from '@/Components/InputError';
+import { useRef, useState } from 'react';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import { useForm } from '@inertiajs/react';
-import { Transition } from '@headlessui/react';
+import { post, put } from "@/api";
+import Swal from "sweetalert2";
 
 export default function UpdatePasswordForm({ className = '' }) {
     const passwordInput = useRef();
     const currentPasswordInput = useRef();
 
-    const { data, setData, errors, put, reset, processing, recentlySuccessful } = useForm({
-        current_password: '',
-        password: '',
-        password_confirmation: '',
-    });
+    const [userPassword, setUserPassword] = useState({ currentPassword: "", newPassword: "", confirmNewPassword: "" });
+    const [loading, setLoading] = useState(false);
 
-    const updatePassword = (e) => {
+    const updatePassword = async (e) => {
         e.preventDefault();
 
-        put(route('password.update'), {
-            preserveScroll: true,
-            onSuccess: () => reset(),
-            onError: (errors) => {
-                if (errors.password) {
-                    reset('password', 'password_confirmation');
-                    passwordInput.current.focus();
-                }
+        setLoading(true);
 
-                if (errors.current_password) {
-                    reset('current_password');
-                    currentPasswordInput.current.focus();
-                }
-            },
-        });
+        if (userPassword.newPassword === userPassword.confirmNewPassword && userPassword.currentPassword !== userPassword.newPassword) {
+            await put(route("password.update"), {
+                current_password: userPassword.currentPassword,
+                password: userPassword.newPassword,
+                password_confirmation: userPassword.confirmNewPassword
+            }).then((res) => {
+                Swal.fire({
+                    icon: "success",
+                    text: "Password has been updated."
+                })
+                setLoading(false);
+            }).catch((err) => {
+                console.log();
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: `Could not update password: ${err.response.data.message || "Unknown Error"}`
+                });
+                setLoading(false);
+            })
+        } else {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Passwords do not match or the current password matches the new password."
+            });
+            setLoading(false);
+        }
+
     };
 
     return (
@@ -53,14 +65,12 @@ export default function UpdatePasswordForm({ className = '' }) {
                     <TextInput
                         id="current_password"
                         ref={currentPasswordInput}
-                        value={data.current_password}
-                        onChange={(e) => setData('current_password', e.target.value)}
+                        value={userPassword.currentPassword}
+                        onChange={(e) => setUserPassword({ ...userPassword, currentPassword: e.target.value })}
                         type="password"
                         className="mt-1 block w-full"
                         autoComplete="current-password"
                     />
-
-                    <InputError message={errors.current_password} className="mt-2" />
                 </div>
 
                 <div>
@@ -69,14 +79,13 @@ export default function UpdatePasswordForm({ className = '' }) {
                     <TextInput
                         id="password"
                         ref={passwordInput}
-                        value={data.password}
-                        onChange={(e) => setData('password', e.target.value)}
+                        value={userPassword.newPassword}
+                        onChange={(e) => setUserPassword({ ...userPassword, newPassword: e.target.value })}
                         type="password"
                         className="mt-1 block w-full"
                         autoComplete="new-password"
                     />
 
-                    <InputError message={errors.password} className="mt-2" />
                 </div>
 
                 <div>
@@ -84,27 +93,26 @@ export default function UpdatePasswordForm({ className = '' }) {
 
                     <TextInput
                         id="password_confirmation"
-                        value={data.password_confirmation}
-                        onChange={(e) => setData('password_confirmation', e.target.value)}
+                        value={userPassword.confirmNewPassword}
+                        onChange={(e) => setUserPassword({ ...userPassword, confirmNewPassword: e.target.value })}
                         type="password"
                         className="mt-1 block w-full"
                         autoComplete="new-password"
                     />
 
-                    <InputError message={errors.password_confirmation} className="mt-2" />
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Save</PrimaryButton>
+                    <PrimaryButton disabled={loading}>Save</PrimaryButton>
 
-                    <Transition
+                    {/* <Transition
                         show={recentlySuccessful}
                         enterFrom="opacity-0"
                         leaveTo="opacity-0"
                         className="transition ease-in-out"
                     >
                         <p className="text-sm text-gray-600">Saved.</p>
-                    </Transition>
+                    </Transition> */}
                 </div>
             </form>
         </section>

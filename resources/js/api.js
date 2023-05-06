@@ -20,6 +20,16 @@ export function post(url, body) {
     })
 }
 
+export function put(url, body) {
+    return new Promise((resolve, reject) => {
+        axios.put(url, body).then((res) => {
+            resolve(res.data);
+        }).catch((err) => {
+            reject(err);
+        })
+    })
+}
+
 export function httpDelete(url) {
     return new Promise((resolve, reject) => {
         axios.delete(url).then((res) => {

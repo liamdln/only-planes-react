@@ -2,25 +2,46 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import { Link, useForm, usePage } from '@inertiajs/react';
 import { Transition } from '@headlessui/react';
+import { put } from "@/api";
+import Swal from "sweetalert2";
+import { useState } from "react";
 
-export default function UpdateProfileInformation({ mustVerifyEmail, status, className = '' }) {
-    const user = usePage().props.auth.user;
+export default function UpdateProfileInformation({ className = '', user }) {
 
-    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
-        name: user.name,
-        email: user.email,
-    });
+    const [userDetails, setUserDetails] = useState({ name: user.name, email: user.email });
+    const [loading, setLoading] = useState(false);
 
-    const submit = (e) => {
+    const submit = async (e) => {
         e.preventDefault();
 
-        patch(route('profile.update'));
-
         // console.log(e.target.name.value);
-        user.name = e.target.name.value;
-        user.email = e.target.email.value;
+        setLoading(true);
+
+        await put(`/api/profile/edit/${user.id}`, { id: user.id, name: userDetails.name, email: userDetails.email }).then((res) => {
+            Swal.fire({
+                icon: "success",
+                text: "User has been updated."
+            }).then(() => {
+                setLoading(false);
+                window.location.reload(false);
+            })
+        }).catch((err) => {
+            if (err.response.status === 304) {
+                Swal.fire({
+                    icon: "info",
+                    text: "Nothing was changed."
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Could not update user."
+                });
+            }
+            setLoading(false);
+        })
+
     };
 
     return (
@@ -40,14 +61,13 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
                     <TextInput
                         id="name"
                         className="mt-1 block w-full"
-                        value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
+                        value={userDetails.name}
+                        onChange={(e) => setUserDetails({ ...userDetails, name: e.target.value })}
                         required
                         isFocused
                         autoComplete="name"
                     />
 
-                    <InputError className="mt-2" message={errors.name} />
                 </div>
 
                 <div>
@@ -57,16 +77,15 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
                         id="email"
                         type="email"
                         className="mt-1 block w-full"
-                        value={data.email}
-                        onChange={(e) => setData('email', e.target.value)}
+                        value={userDetails.email}
+                        onChange={(e) => setUserDetails({ ...userDetails, email: e.target.value })}
                         required
                         autoComplete="username"
                     />
 
-                    <InputError className="mt-2" message={errors.email} />
                 </div>
 
-                {mustVerifyEmail && user.email_verified_at === null && (
+                {/* {mustVerifyEmail && user.email_verified_at === null && (
                     <div>
                         <p className="text-sm mt-2 text-gray-800">
                             Your email address is unverified.
@@ -86,19 +105,19 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
                             </div>
                         )}
                     </div>
-                )}
+                )} */}
 
                 <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Save</PrimaryButton>
+                    <PrimaryButton disabled={loading}>Save</PrimaryButton>
 
-                    <Transition
+                    {/* <Transition
                         show={recentlySuccessful}
                         enterFrom="opacity-0"
                         leaveTo="opacity-0"
                         className="transition ease-in-out"
                     >
                         <p className="text-sm text-gray-600">Saved.</p>
-                    </Transition>
+                    </Transition> */}
                 </div>
             </form>
         </section>

@@ -3,7 +3,8 @@ import { UserProvider } from "@/Contexts/UserContext";
 import { Head } from '@inertiajs/react';
 import ActionCard from "@/Components/ActionCard";
 import { useState } from "react";
-
+import Swal from "sweetalert2";
+import { httpDelete } from "@/api";
 
 
 export default function Interactions({ auth, type, aircraft }) {
@@ -14,8 +15,31 @@ export default function Interactions({ auth, type, aircraft }) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-    const removeAircraft = (aircraftId) => {
-        setAircraftProfiles(aircraftProfiles.filter((aircraft) => aircraft.id != aircraftId));
+    const removeAircraft = async (aircraftId, aircraftReg) => {
+        await Swal.fire({
+            icon: "question",
+            title: "Are you sure?",
+            text: `Are you sure you want to delete ${aircraftReg.toUpperCase()}?`,
+            showConfirmButton: true,
+            showDenyButton: true,
+            confirmButtonText: "Delete",
+            denyButtonText: "Keep",
+            confirmButtonColor: "#D50000",
+            denyButtonColor: "#00C853"
+        }).then(async (response) => {
+            if (response.isConfirmed) {
+                await httpDelete(`/interactions?aircraftId=${aircraftId}`).then(() => {
+                    setAircraftProfiles(aircraftProfiles.filter((aircraft) => aircraft.id != aircraftId));
+                }).catch((err) => {
+                    console.error(err);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Could not delete aircraft."
+                    })
+                })
+            }
+        })
     }
 
     return (
@@ -29,7 +53,7 @@ export default function Interactions({ auth, type, aircraft }) {
                         ?
                         aircraftProfiles.map((element, index) => {
                             return (
-                                <ActionCard key={index} aircraft={element} actionDate={element.action_dispatch_date} removeAircraft={ removeAircraft }></ActionCard>
+                                <ActionCard key={index} aircraft={element} actionDate={element.action_dispatch_date} removeAircraft={removeAircraft }></ActionCard>
                             )
                         })
                         :

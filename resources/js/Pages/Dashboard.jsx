@@ -46,7 +46,7 @@ export default function Dashboard({ auth }) {
                 footer: "If this continues, please contact the web administrator.",
                 confirmButtonText: "Refresh"
             }).then(() => {
-                window.location.reload();
+                window.location.reload(false);
             })
         })
     }, [aircraftResPage])

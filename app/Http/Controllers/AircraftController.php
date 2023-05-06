@@ -93,7 +93,7 @@ class AircraftController extends Controller
             $request->aircraft_image->move(public_path("images"), $imageName);
             // $request->aircraft_image->storeAs("aircraft_images", $imageName);
 
-            $user = Auth::user();
+            $user = $request->user();
 
             DB::table("aircraft")->insert([
                 "reg" => $reg,
@@ -144,8 +144,26 @@ class AircraftController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request)
     {
-        //
+
+        $user_id = $request->user()->id;
+        $aircraftId = $request->query("aircraftId");
+        $aircraft = DB::table("aircraft")->select("user_id")->where("id", "=", $aircraftId);
+        $aircraft_owner = $aircraft->get();
+        $requestee_power = DB::table("users")->select("permission_power")->where("id", "=", $user_id)->get();
+
+        if ($aircraft_owner[0]->user_id == $user_id || $requestee_power[0]->permission_power >= 100) {
+            $aircraft->delete();
+
+            return response()->json([
+                "status" => "success"
+            ], 200);
+        }
+
+        return response()->json([
+            "status" => "error",
+            "message" => "You are not authorized to perform the requested action."
+        ], 403);
     }
 }

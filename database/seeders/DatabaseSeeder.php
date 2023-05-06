@@ -35,9 +35,12 @@ class DatabaseSeeder extends Seeder
                     Comment::factory(fake()->randomDigitNotZero())->create(["author_id" => $user->id, "aircraft_id" => $aircraft->id]);
                 }
 
-                // should we like this aircraft?
-                $opinions = ["like", "dislike"];
-                Opinion::factory(1)->create(["user_id" => $user->id, "aircraft_id" => $aircraft->id, "opinion" => $opinions[array_rand($opinions, 1)]]);
+                // should we add an opinion?
+                if (rand(0, 1) == 1) {
+                    // should we like this aircraft?
+                    $opinions = ["like", "dislike"];
+                    Opinion::factory(1)->create(["user_id" => $user->id, "aircraft_id" => $aircraft->id, "opinion" => $opinions[array_rand($opinions, 1)]]);
+                }
             });
         });
     }

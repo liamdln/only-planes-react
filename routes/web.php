@@ -41,9 +41,9 @@ Route::middleware('auth')->group(function () {
     Route::delete("/interactions", [OpinionController::class, "destroy"]);
 
     // profile
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get("/profile", [ProfileController::class, "index"]);
+    Route::get('/profile/edit/{id}', [ProfileController::class, 'edit']);
+    Route::delete('/profile/edit', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // users profile
     Route::get("/user/{user_id}", [ProfileController::class, "getUserProfile"])->name("user.profile");
@@ -74,13 +74,18 @@ Route::prefix("/api")->group(function () {
             Route::get("/all-aircraft/{page}", "paginatedIndex");
             Route::get("/aircraft/{id}", "show");
             Route::post("/aircraft/create", "store");
+            Route::delete("/aircraft/delete", "destroy");
         });
 
         // user
         Route::controller(UserController::class)->group(function () {
             Route::get("/users", "index");
             Route::get("/users/{id}", "show");
+            Route::delete("/profile/delete", "destroy");
         });
+
+        // profile
+        Route::put('/profile/edit/{id}', [ProfileController::class, 'updateDetails']);
 
         // Actions
         Route::controller(OpinionController::class)->group(function () {

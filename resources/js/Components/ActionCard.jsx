@@ -3,9 +3,8 @@ import 'moment/locale/en-gb';
 import PrimaryButtonEvent from "./PrimaryButtonEvent";
 import DangerButtonEvent from "./DangerButtonEvent";
 import Swal from "sweetalert2";
-import { httpDelete, get } from "@/api";
-import { useContext, useState } from "react";
-import { UserContext } from "@/Contexts/UserContext";
+import { get } from "@/api";
+import {useState } from "react";
 import Modal from "@/Components/Modal";
 import Profile from "@/Components/Profile";
 
@@ -15,35 +14,6 @@ export default function ActionCard({ aircraft, actionDate, className = "", remov
     const [showModal, setShowModal] = useState(false);
     const [modalLoading, setModalLoading] = useState(false);
     const [aircraftProfile, setAircraftProfile] = useState({});
-    const user = useContext(UserContext);
-
-    const deleteOpinion = async (aircraftId, aircraftReg) => {
-        await Swal.fire({
-            icon: "question",
-            title: "Are you sure?",
-            text: `Are you sure you want to delete ${aircraftReg.toUpperCase()}?`,
-            showConfirmButton: true,
-            showDenyButton: true,
-            confirmButtonText: "Delete",
-            denyButtonText: "Keep",
-            confirmButtonColor: "#D50000",
-            denyButtonColor: "#00C853"
-        }).then(async (response) => {
-            if (response.isConfirmed) {
-                await httpDelete(`/interactions?aircraftId=${aircraftId}`).then(() => {
-                    removeAircraft(aircraftId)
-                }).catch((err) => {
-                    console.error(err);
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: "Could not delete aircraft."
-                    })
-                })
-            }
-        })
-
-    }
 
     const viewAircraft = async (aircraftId) => {
         setModalLoading(true)
@@ -83,7 +53,7 @@ export default function ActionCard({ aircraft, actionDate, className = "", remov
                 <div className="flex gap-3 justify-center">
                     <PrimaryButtonEvent onClick={() => { viewAircraft(aircraft.id) }}>View</PrimaryButtonEvent>
                     {allowRemoval ?
-                        <DangerButtonEvent onClick={() => { deleteOpinion(aircraft.id, aircraft.reg) }}>Remove</DangerButtonEvent>
+                        <DangerButtonEvent onClick={() => { removeAircraft(aircraft.id, aircraft.reg) }}>Remove</DangerButtonEvent>
                         :
                         <></>
                     }

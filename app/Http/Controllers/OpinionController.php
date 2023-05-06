@@ -93,11 +93,27 @@ class OpinionController extends Controller
     {
         // $userId = $request->query("userId");
         $aircraftId = $request->query("aircraftId");
+        $opinion = DB::table("opinions")->select("id")->where("user_id", "=", $request->user()->id)->where("aircraft_id", "=", $aircraftId);
+        $opinion->delete();
+        return response()->json([
+            "status" => "success"
+        ], 200);
 
-        DB::table("opinions")
-            ->select("id")
-            ->where("user_id", "=", Auth::user()->id)
-            ->where("aircraft_id", "=", $aircraftId)
-            ->delete();
+        // $opinion_owner = $opinion->get();
+
+        // dd($opinion_owner[0]->id);
+
+        // if ($opinion_owner[0]->id == $request->user()->id) {
+        //     $opinion->delete();
+
+        //     return response()->json([
+        //         "status" => "success"
+        //     ], 200);
+        // }
+
+        // return response()->json([
+        //     "status" => "error",
+        //     "message" => "You are not authorized to perform the requested action."
+        // ], 403);
     }
 }

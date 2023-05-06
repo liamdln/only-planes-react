@@ -36,7 +36,7 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        $user = DB::table("users")->select("*")->where("id", "=", $id)->get();
+        $user = DB::table("users")->select(["name", "id"])->where("id", "=", $id)->get();
 
         if ($user->isEmpty()) {
             abort(404);
@@ -64,8 +64,39 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request)
     {
-        //
+
+        $id = $request->query("userId");
+
+        if ($request->user()->id == $id) {
+            return response()->json([
+                "status" => "error",
+                "message" => "You cannot delete yourself."
+            ], 400);
+        }
+
+        $current_user_power = DB::table("users")->select("permission_power")->where("id", "=", $request->user()->id)->get();
+        $user = DB::table("users")->select(["id", "permission_power"])->where("id", "=", $id);
+
+        if ($user->get()[0]->permission_power >= 100) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Cannot delete an admin."
+            ], 400);
+        }
+
+        if ($current_user_power[0]->permission_power >= 100) {
+            $user->delete();
+            return response()->json([
+                "status" => "success",
+            ], 200);
+        }
+
+        return response()->json([
+            "status" => "error",
+            "message" => "You are not allowed to perform this action."
+        ], 403);
+
     }
 }

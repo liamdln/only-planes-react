@@ -37,7 +37,7 @@ export default function Profile({ aircraft, className = "", children }) {
             </div>
             <div className="text-center items-center my-3">
                 <p className="uppercase text-5xl mb-1">{aircraft.reg}</p>
-                <p className="">Submitted by: { user.name || "Getting name..." }</p>
+                <p className="">Submitted by: {<a href={`/user/${user.id}`} className="underline text-white">{user.name}</a> || "Getting name..." }</p>
             </div>
             <div className="text-start p-10">
                 <ul>
