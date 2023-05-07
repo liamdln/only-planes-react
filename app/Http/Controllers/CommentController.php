@@ -38,7 +38,51 @@ class CommentController extends Controller
                 "message" => "Could not get comments."
             ], 500);
         }
+    }
 
+    public function getPaginatedComments(Request $request, int $page)
+    {
+        $aircraft_id = $request->query("aircraftId");
+        $user_id = $request->query("user_id");
+        $comments_per_page = 5;
+        try {
+
+            if (!$aircraft_id && $user_id) {
+                $comments = DB::table("comments")
+                    ->select(["content", "likes", "date", "id", "author_id"])
+                    ->where("aircraft_id", "=", $user_id);
+            } else if (!$user_id && $aircraft_id) {
+                $comments = DB::table("comments")
+                    ->select(["content", "likes", "date", "id", "author_id"])
+                    ->where("aircraft_id", "=", $aircraft_id);
+            } else if ($aircraft_id && $user_id) {
+                $comments = DB::table("comments")
+                    ->select(["content", "likes", "date", "id", "author_id"])
+                    ->where("aircraft_id", "=", $aircraft_id)
+                    ->where("user_id", "=", $user_id);
+            } else {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "No aircraft ID or user ID supplied."
+                ], 400);
+            }
+
+            $total_comments = $comments->count();
+            $filtered_comments = $comments
+                ->offset($comments_per_page * ($page - 1))
+                ->limit($comments_per_page)
+                ->get();
+
+            return response()->json([
+                "payload" => $filtered_comments,
+                "totalComments" => $total_comments
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Could not get comments."
+            ], 500);
+        }
     }
 
 
@@ -47,7 +91,6 @@ class CommentController extends Controller
      */
     public function create()
     {
-
     }
 
     /**
@@ -76,8 +119,6 @@ class CommentController extends Controller
                 "message" => "Could not create comment."
             ], 500);
         }
-
-
     }
 
     /**
@@ -113,6 +154,13 @@ class CommentController extends Controller
         $requestee_role = DB::table("users")->select("role")->where("id", "=", $request->user()->id)->get();
         $commentRow = DB::table("comments")->select("*")->where("id", "=", $id);
         $commentAuthor = $commentRow->get();
+
+        if (!$commentAuthor[0]) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Comment not found."
+            ], 404);
+        }
 
         // ensure user is an admin
         if ($requestee_role[0]->role == "Admin" || $commentAuthor[0]->author_id == $request->user()->id) {

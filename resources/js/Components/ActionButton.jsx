@@ -1,7 +1,11 @@
 
-export function ActionButton({ type, onClick }) {
+export function ActionButton({ type, onClick, disabled }) {
 
     const determineStyleClass = () => {
+
+        if (disabled) {
+            return "text-zinc-700"
+        }
 
         const styleClassElements = ["text-gray-900 dark:text-white"]
 
@@ -17,7 +21,7 @@ export function ActionButton({ type, onClick }) {
 
     return (
 
-        <button className={`${determineStyleClass()} mx-10 px-10`} type="button" onClick={() => onClick()}>
+        <button className={`${determineStyleClass()} mx-10 px-10`} type="button" disabled={ disabled } onClick={() => onClick()}>
             {type === "dislike"
                 ?
                 <svg xmlns="http://www.w3.org/2000/svg" width={128} height={128} fill="currentColor" className="bi bi-x-circle-fill" viewBox="0 0 16 16">

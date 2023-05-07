@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -20,6 +21,13 @@ class AircraftController extends Controller
     {
         $aircraft = DB::table("aircraft")->select("*")->get();
         return json_decode($aircraft);
+    }
+
+    public function aircraftPage(int $aircraft_id) {
+        $aircraft = DB::table("aircraft")->select("*")->where("id", "=", $aircraft_id)->get();
+        return Inertia::render("Aircraft", [
+            "aircraft" => $aircraft[0]
+        ]);
     }
 
     /**
@@ -49,14 +57,6 @@ class AircraftController extends Controller
             ->inRandomOrder()
             ->get();
         return json_decode($aircraft);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -126,22 +126,6 @@ class AircraftController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
      * Remove the specified resource from storage.
      */
     public function destroy(Request $request)
@@ -153,13 +137,27 @@ class AircraftController extends Controller
         $aircraft_owner = $aircraft->get();
         $requestee_role = DB::table("users")->select("role")->where("id", "=", $user_id)->get();
 
+        if ($aircraft->count() < 1) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Aircraft not found."
+            ], 404);
+        }
+
         // ensure user is an admin
         if ($aircraft_owner[0]->user_id == $user_id || $requestee_role[0]->role == "Admin") {
-            $aircraft->delete();
+            try {
+                $aircraft->delete();
 
-            return response()->json([
-                "status" => "success"
-            ], 200);
+                return response()->json([
+                    "status" => "success"
+                ], 200);
+            } catch (Exception $e) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Could not delete aircraft."
+                ], 500);
+            }
         }
 
         return response()->json([

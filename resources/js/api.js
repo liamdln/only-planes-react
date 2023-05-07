@@ -1,4 +1,5 @@
 import axios from "axios";
+import $ from "jquery";
 
 export function get(url) {
     return new Promise((resolve, reject) => {
@@ -39,3 +40,47 @@ export function httpDelete(url) {
         })
     })
 }
+
+// export function ajaxGet(url) {
+//     return new Promise((resolve, reject) => {
+//         $.ajax(url, {
+//             type: "GET",
+//             success: function (data) {
+//                 resolve(data);
+//             },
+//             error: function (_, __, error) {
+//                 reject(error);
+//             }
+//         })
+//     });
+// }
+
+// export function ajaxPost(url, body) {
+//     return new Promise((resolve, reject) => {
+//         $.ajax(url, {
+//             type: "POST",
+//             dataType: 'json',
+//             data: body,
+//             success: function (data) {
+//                 resolve(data);
+//             },
+//             error: function (_, __, error) {
+//                 reject(error);
+//             }
+//         })
+//     })
+// }
+
+// export function ajaxDelete(url) {
+//     return new Promise((resolve, reject) => {
+//         $.ajax(url, {
+//             type: "DELETE",
+//             success: function (data) {
+//                 resolve(data);
+//             },
+//             error: function (_, __, error) {
+//                 reject(error);
+//             }
+//         })
+//     })
+// }

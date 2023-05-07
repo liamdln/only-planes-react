@@ -21,8 +21,12 @@ export default function Dashboard({ auth }) {
     // run every time aircraftResPage changes
     useEffect(() => {
         setLoading(true);
+        getAircraft();
         setAircraftList([]);
-        get(`/api/all-aircraft/${aircraftResPage}?avoid-user=${auth.user.id}`).then((res) => {
+    }, [aircraftResPage])
+
+    const getAircraft = async () => {
+        await get(`/api/all-aircraft/${aircraftResPage}?avoid-user=${auth.user.id}`).then((res) => {
             // console.log(res);
             if (res.length < 1) {
                 Swal.fire({
@@ -33,9 +37,9 @@ export default function Dashboard({ auth }) {
                     setLoading(false);
                 })
             } else {
+                setLoading(false);
                 setAircraftList(res);
                 setCurrentAircraftIndex(0);
-                setLoading(false);
             }
         }).catch((err) => {
             console.error(err);
@@ -44,12 +48,18 @@ export default function Dashboard({ auth }) {
                 title: "Error",
                 text: "Could not fetch aircraft. Please refresh.",
                 footer: "If this continues, please contact the web administrator.",
-                confirmButtonText: "Refresh"
-            }).then(() => {
-                window.location.reload(false);
+                confirmButtonText: "Refresh",
+                showDenyButton: true,
+                denyButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.reload(false);
+                } else {
+                    setLoading(false);
+                }
             })
         })
-    }, [aircraftResPage])
+    }
 
     const nextPage = () => {
         setLoading(true);
@@ -102,7 +112,7 @@ export default function Dashboard({ auth }) {
                 <Head title="Dashboard" />
                 {/* height of div: 100vh - navbar height - navbar bottom margin */}
                 <div className="flex justify-center" style={{ height: "calc(100vh - 64px - 20px)" }}>
-                    <ActionButton type="dislike" onClick={() => postAction("dislike", aircraftList[currentAircraftIndex].id)}></ActionButton>
+                    <ActionButton disabled={ loading } type="dislike" onClick={() => postAction("dislike", aircraftList[currentAircraftIndex].id)}></ActionButton>
                     {loading
                         ?
                         <div className="max-w-screen-lg w-full flex justify-center items-center">
@@ -117,8 +127,10 @@ export default function Dashboard({ auth }) {
                         </div>
                         :
                         <Profile
-                            aircraft={aircraftList[currentAircraftIndex]}></Profile>}
-                    <ActionButton type="like" onClick={() => postAction("like", aircraftList[currentAircraftIndex].id)}></ActionButton>
+                            aircraft={aircraftList[currentAircraftIndex]}
+                        >
+                        </Profile>}
+                    <ActionButton disabled={loading} type="like" onClick={() => postAction("like", aircraftList[currentAircraftIndex].id)}></ActionButton>
                 </div>
             </AuthenticatedLayout>
         </UserProvider>

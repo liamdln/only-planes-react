@@ -42,12 +42,10 @@ Route::middleware('auth')->group(function () {
     Route::delete("/interactions", [OpinionController::class, "destroy"]);
 
     // profile
-    Route::get("/profile", [ProfileController::class, "index"]);
-    Route::get('/profile/edit/{id}', [ProfileController::class, 'edit']);
-    Route::delete('/profile/edit', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get("/profile/{id}", [ProfileController::class, "index"]);
 
-    // users profile
-    Route::get("/user/{user_id}", [ProfileController::class, "getUserProfile"])->name("user.profile");
+    // aircraft
+    Route::get("/aircraft/{id}", [AircraftController::class, "aircraftPage"]);
 });
 
 // files
@@ -80,13 +78,14 @@ Route::prefix("/api")->group(function () {
 
         // user
         Route::controller(UserController::class)->group(function () {
-            Route::get("/users", "index");
             Route::get("/users/{id}", "show");
             Route::delete("/profile/delete", "destroy");
         });
 
         // profile
-        Route::put('/profile/edit/{id}', [ProfileController::class, 'updateDetails']);
+        Route::controller(ProfileController::class)->group(function () {
+            Route::put("/profile/edit/{id}", "updateDetails");
+        });
 
         // Actions
         Route::controller(OpinionController::class)->group(function () {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -94,10 +95,26 @@ class OpinionController extends Controller
         // $userId = $request->query("userId");
         $aircraftId = $request->query("aircraftId");
         $opinion = DB::table("opinions")->select("id")->where("user_id", "=", $request->user()->id)->where("aircraft_id", "=", $aircraftId);
-        $opinion->delete();
-        return response()->json([
-            "status" => "success"
-        ], 200);
+
+        if ($opinion->count() < 1) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Opinion not found."
+            ], 404);
+        }
+
+        try {
+            $opinion->delete();
+            return response()->json([
+                "status" => "success"
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Could not remove relationship"
+            ], 500);
+        }
+
 
         // $opinion_owner = $opinion->get();
 

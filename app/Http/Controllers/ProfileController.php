@@ -15,27 +15,29 @@ use Inertia\Response;
 class ProfileController extends Controller
 {
 
-    public function index(Request $request)
+    public function index(int $user_id)
     {
-        $userId = $request->user()->id;
-        $user_aircraft = DB::table("aircraft")->select("*")->where("user_id", "=", $userId)->get();
+        $user = DB::table("users")->select(["name", "id", "role"])->where("id", "=", $user_id)->get();
+        $user_aircraft = DB::table("aircraft")->select("*")->where("user_id", "=", $user_id)->get();
+        $user_comments = DB::table("comments")->select(["author_id", "aircraft_id", "content", "date", "id"])->where("author_id", "=", $user_id)->get();
         return Inertia::render("User", [
-            "userDetails" => $request->user(),
+            "userDetails" => $user[0],
             "userAircraft" => $user_aircraft,
+            "userComments" => $user_comments
         ]);
     }
 
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request, int $userId): Response
+    public function edit(Request $request, int $user_id): Response
     {
 
         $current_user_role = DB::table("users")->select("role")->where("id", "=", $request->user()->id)->get();
 
         // ensure user is admin
-        if ($request->user()->id == $userId || $current_user_role[0]->role == "Admin") {
-            $user = DB::table("users")->select(["name", "email", "id", "role"])->where("id", "=", $userId)->get();
+        if ($request->user()->id == $user_id || $current_user_role[0]->role == "Admin") {
+            $user = DB::table("users")->select(["name", "email", "id", "role"])->where("id", "=", $user_id)->get();
 
             if ($user->isEmpty()) {
                 abort(404);
@@ -87,59 +89,18 @@ class ProfileController extends Controller
         ], 403);
     }
 
-    // /**
-    //  * Delete the user's account.
-    //  */
-    // public function destroy(Request $request): RedirectResponse
+    // public function getUserProfile(int $user_id)
     // {
-    //     $request->validate([
-    //         'password' => ['required', 'current_password'],
-    //     ]);
+    //     $user = DB::table("users")->select(["name", "id", "role"])->where("id", "=", $user_id)->get();
 
-    //     $user = $request->user();
-
-    //     Auth::logout();
-
-    //     $user->delete();
-
-    //     $request->session()->invalidate();
-    //     $request->session()->regenerateToken();
-
-    //     return Redirect::to('/');
-    // }
-
-    // public function editUserBanStatus(Request $request) {
-    //     $id = $request->input("id");
-    //     $ban_status = $request->input("banned");
-    //     $requestee_power = DB::table("users")->select("permission_power")->where("id", "=", $request->user()->id)->get();
-
-    //     if ($requestee_power[0]->permission_power >= 100) {
-    //         DB::table("users")->where("id", $id)->update(["banned" => $ban_status]);
-    //         return response()->json([
-    //             "status" => "success",
-    //             "message" => "User ban status changed to " .
-    //         ], 200);
+    //     if ($user->isEmpty()) {
+    //         abort(404);
     //     }
 
-    //     return response()->json([
-    //         "status" => "error",
-    //         "message" => "You are not permitted to perform this action."
-    //     ], 403);
-
+    //     $user_aircraft = DB::table("aircraft")->select("*")->where("user_id", "=", $user_id)->get();
+    //     return Inertia::render("User", [
+    //         "userDetails" => $user[0],
+    //         "userAircraft" => $user_aircraft,
+    //     ]);
     // }
-
-    public function getUserProfile(int $user_id)
-    {
-        $user = DB::table("users")->select(["name", "id", "role"])->where("id", "=", $user_id)->get();
-
-        if ($user->isEmpty()) {
-            abort(404);
-        }
-
-        $user_aircraft = DB::table("aircraft")->select("*")->where("user_id", "=", $user_id)->get();
-        return Inertia::render("User", [
-            "userDetails" => $user[0],
-            "userAircraft" => $user_aircraft,
-        ]);
-    }
 }
