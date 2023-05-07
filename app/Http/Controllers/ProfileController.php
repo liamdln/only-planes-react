@@ -35,7 +35,7 @@ class ProfileController extends Controller
 
         // ensure user is admin
         if ($request->user()->id == $userId || $current_user_role[0]->role == "Admin") {
-            $user = DB::table("users")->select(["name", "email", "id"])->where("id", "=", $userId)->get();
+            $user = DB::table("users")->select(["name", "email", "id", "role"])->where("id", "=", $userId)->get();
 
             if ($user->isEmpty()) {
                 abort(404);
@@ -130,7 +130,7 @@ class ProfileController extends Controller
 
     public function getUserProfile(int $user_id)
     {
-        $user = DB::table("users")->select(["name", "id"])->where("id", "=", $user_id)->get();
+        $user = DB::table("users")->select(["name", "id", "role"])->where("id", "=", $user_id)->get();
 
         if ($user->isEmpty()) {
             abort(404);

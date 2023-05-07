@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId("author_id")->references("id")->on("users")->onDelete("cascade")->onUpdate("cascade");
             $table->foreignId("aircraft_id")->references("id")->on("aircraft")->onDelete("cascade")->onUpdate("cascade");
-            $table->string("content");
+            $table->longText("content");
             $table->integer("likes");
             $table->dateTime("date");
             $table->timestamps();

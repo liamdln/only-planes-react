@@ -20,7 +20,8 @@ module.exports = {
                 "op-darkblue": "#222831",
                 "op-primary": "#D65A31",
                 "op-primary-effect": "#cb5128",
-                "op-card": "#2a313d"
+                "op-card": "#2a313d",
+                "op-card-secondary": "#8794ac",
             }
         },
     },

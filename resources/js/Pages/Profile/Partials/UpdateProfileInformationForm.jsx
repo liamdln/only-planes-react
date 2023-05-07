@@ -3,13 +3,17 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { put } from "@/api";
 import Swal from "sweetalert2";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function UpdateProfileInformation({ className = '', user, loggedInUser }) {
 
     const [userDetails, setUserDetails] = useState({ name: user.name, email: user.email });
     const [loading, setLoading] = useState(false);
-    const [role, setRole] = useState(user.role || "");
+    const [role, setRole] = useState("");
+
+    useEffect(() => {
+        setRole(user.role);
+    }, [user])
 
     const submit = async (e) => {
         e.preventDefault();
@@ -88,9 +92,10 @@ export default function UpdateProfileInformation({ className = '', user, loggedI
                     <InputLabel htmlFor="role" value="Role" />
                     <select id="countries"
                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                        onChange={(e) => setRole(e.target.value)}>
-                        <option selected={role === "Member"} value="Member">Member</option>
-                        <option selected={role === "Admin"} value="Admin">Admin</option>
+                        onChange={(e) => setRole(e.target.value)}
+                        value={role}>
+                        <option value="Member">Member</option>
+                        <option value="Admin">Admin</option>
                     </select>
 
                 </div>

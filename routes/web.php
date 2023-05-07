@@ -8,6 +8,7 @@ use App\Http\Controllers\AircraftController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\OpinionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -91,6 +92,14 @@ Route::prefix("/api")->group(function () {
         Route::controller(OpinionController::class)->group(function () {
             Route::post("/opinions", "store");
         });
+
+        // comments
+        Route::controller(CommentController::class)->group(function () {
+            Route::get("/comments", "getComments");
+            Route::post("/comments", "store");
+            Route::delete("/comments", "destroy");
+        });
+
     });
 });
 
