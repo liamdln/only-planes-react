@@ -1,14 +1,17 @@
-import { httpDelete } from "@/api";
-import Swal from "sweetalert2";
+import { httpDelete, post } from "@/api";
 
 export async function removeAircraft(aircraftId) {
-    await httpDelete(`/api/aircraft/delete?aircraftId=${aircraftId}`)
-        .catch((err) => {
-            console.error(err);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Could not delete aircraft."
-            })
-        })
+    return await httpDelete(`/api/aircraft/delete?aircraftId=${aircraftId}`);
+}
+
+export async function editAircraft(id, formData) {
+    return await post(`/api/aircraft/edit?aircraftId=${id}`, formData).then((res) => {
+        return res.payload || res;
+    });
+}
+
+export async function addAircraft(formData) {
+    return await post("/api/aircraft/create", formData).then((res) => {
+        return res.payload || res;
+    });
 }

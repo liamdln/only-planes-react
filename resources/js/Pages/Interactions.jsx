@@ -29,8 +29,16 @@ export default function Interactions({ auth, type, aircraft }) {
             denyButtonColor: "#00C853"
         }).then(async (response) => {
             if (response.isConfirmed) {
-                await removeOpinion(aircraftId);
-                setAircraftProfiles(aircraftProfiles.filter((aircraft) => aircraft.id != aircraftId));
+                await removeOpinion(aircraftId).then(() => {
+                    setAircraftProfiles(aircraftProfiles.filter((aircraft) => aircraft.id != aircraftId));
+                }).catch(() => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error!",
+                        text: "Could not remove aircraft."
+                    })
+                });
+
             }
         })
     }
@@ -46,7 +54,7 @@ export default function Interactions({ auth, type, aircraft }) {
                         ?
                         aircraftProfiles.map((element, index) => {
                             return (
-                                <ActionCard key={index} aircraft={element} actionDate={element.action_dispatch_date} removeAircraft={handleRemoveAircraft }></ActionCard>
+                                <ActionCard key={index} action={ type } aircraft={element} actionDate={element.action_dispatch_date} removeAircraft={handleRemoveAircraft }></ActionCard>
                             )
                         })
                         :

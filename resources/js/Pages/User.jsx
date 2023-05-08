@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { deleteComment } from "@/utils/comments";
 import { removeAircraft } from "@/utils/aircraft";
+import Comment from "@/Components/Comment";
 
 export default function UserProfile({ auth, userDetails, userAircraft, userComments }) {
 
@@ -36,8 +37,15 @@ export default function UserProfile({ auth, userDetails, userAircraft, userComme
             denyButtonColor: "#00C853"
         }).then(async (response) => {
             if (response.isConfirmed) {
-                await removeAircraft(aircraftId);
-                setAircraftProfiles(aircraftProfiles.filter((aircraft) => aircraft.id != aircraftId));
+                await removeAircraft(aircraftId).then(() => {
+                    setAircraftProfiles(aircraftProfiles.filter((aircraft) => aircraft.id != aircraftId));
+                }).catch(() => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error!",
+                        text: "Could not remove aircraft."
+                    })
+                })
             }
         })
 
@@ -47,6 +55,7 @@ export default function UserProfile({ auth, userDetails, userAircraft, userComme
         setCommentsLoading(true);
         const commentsFromDb = userComments;
         for (let i = 0; i < commentsFromDb.length; i++) {
+            commentsFromDb[i].authorName = userDetails.name;
             if (Object.keys(knownRegs).includes(commentsFromDb[i].aircraft_id)) {
                 commentsFromDb[i].aircraft_reg = knownRegs[commentsFromDb[i].aircraft_id];
             } else {
@@ -72,8 +81,16 @@ export default function UserProfile({ auth, userDetails, userAircraft, userComme
             denyButtonColor: "#00C853"
         }).then(async (response) => {
             if (response.isConfirmed) {
-                await deleteComment(commentId);
-                setComments(comments.filter((comment) => comment.id != commentId));
+                await deleteComment(commentId).then(() => {
+                    setComments(comments.filter((comment) => comment.id != commentId));
+                }).catch(() => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error!",
+                        text: "Could not remove comment."
+                    })
+                })
+
             }
         })
     }
@@ -120,28 +137,7 @@ export default function UserProfile({ auth, userDetails, userAircraft, userComme
                             {comments && comments.length > 0 ?
                                 comments.map((comment, index) => {
                                     return (
-                                        <div className="bg-op-card p-3 rounded mb-3 flex justify-between" key={index}>
-                                            <div className="text-start overflow-scroll">
-                                                <div className="text-op-card-secondary">
-                                                    <em>
-                                                        {userDetails.name} commented
-                                                    </em>
-                                                </div>
-                                                <div className="max-w-full">{comment.content}</div>
-                                                <div className="text-op-card-secondary">
-                                                    <em>
-                                                        on <a className="underline uppercase" href={`/aircraft/${comment.aircraft_id}`}>{comment.aircraft_reg}</a> on {moment(comment.date).calendar()}
-                                                    </em>
-                                                </div>
-                                            </div>
-                                            <div className="text-end ms-5 self-center">
-                                                <button type="button" onClick={() => handleCommentDelete(comment.id)} hidden={auth.user.id !== comment.author_id && auth.user.role !== "Admin"}>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-trash-fill" viewBox="0 0 16 16">
-                                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </div>
+                                        <Comment key={index} comment={comment} deleteComment={handleCommentDelete} formatOption={2}></Comment>
                                     )
                                 })
                                 :

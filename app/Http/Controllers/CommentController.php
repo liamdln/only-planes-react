@@ -130,19 +130,52 @@ class CommentController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Edit a comment.
      */
-    public function edit(string $id)
+    public function edit(Request $request)
     {
-        //
-    }
+        $id = $request->query("commentId");
+        $requestee_role = DB::table("users")->select("role")->where("id", "=", $request->user()->id)->get();
+        $commentRow = DB::table("comments")->select("*")->where("id", "=", $id);
+        $comment = $commentRow->get();
+        $new_comment_content = $request->input("content");
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
+        if (!$comment[0]) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Comment not found."
+            ], 404);
+        }
+
+        if (!$new_comment_content || $new_comment_content == "") {
+            return response()->json([
+                "status" => "error",
+                "message" => "No content was sent."
+            ], 400);
+        }
+
+        // ensure user is an admin or the author of the comment
+        if ($requestee_role[0]->role == "Admin" || $comment[0]->author_id == $request->user()->id) {
+            try {
+
+                $commentRow->update(["content" => $new_comment_content, "updated_at" => date("Y-m-d H:i:s")]);
+
+                return response()->json([
+                    "status" => "success"
+                ], 200);
+
+            } catch (Exception $e) {
+                return response()->json([
+                    "status" => "error",
+                    "message" => "Could not edit comment."
+                ], 500);
+            }
+        }
+        return response()->json([
+            "status" => "error",
+            "message" => "You are not authorized to perform the requested action."
+        ], 403);
+
     }
 
     /**
@@ -162,7 +195,7 @@ class CommentController extends Controller
             ], 404);
         }
 
-        // ensure user is an admin
+        // ensure user is an admin or the author of the comment
         if ($requestee_role[0]->role == "Admin" || $commentAuthor[0]->author_id == $request->user()->id) {
             try {
                 $commentRow->delete();

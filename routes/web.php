@@ -72,6 +72,9 @@ Route::prefix("/api")->group(function () {
             Route::get("/all-aircraft", "index");
             Route::get("/all-aircraft/{page}", "paginatedIndex");
             Route::get("/aircraft/{id}", "show");
+            // post as formdata is not sent with put request
+            // bug in laravel
+            Route::post("/aircraft/edit", "edit");
             Route::post("/aircraft/create", "store");
             Route::delete("/aircraft/delete", "destroy");
         });
@@ -96,6 +99,9 @@ Route::prefix("/api")->group(function () {
         Route::controller(CommentController::class)->group(function () {
             Route::get("/comments", "getComments");
             Route::post("/comments", "store");
+            // post as formdata is not sent with put request
+            // bug in laravel
+            Route::post("/comments/edit", "edit");
             Route::delete("/comments", "destroy");
         });
 

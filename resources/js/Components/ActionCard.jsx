@@ -8,7 +8,7 @@ import {useState } from "react";
 import Modal from "@/Components/Modal";
 import Profile from "@/Components/Profile";
 
-export default function ActionCard({ aircraft, actionDate, className = "", removeAircraft, showActionDate = true, allowRemoval = true }) {
+export default function ActionCard({ aircraft, actionDate, className = "", removeAircraft, showActionDate = true, allowRemoval = true, action = "" }) {
 
     moment().local("en-gb");
     const [showModal, setShowModal] = useState(false);
@@ -44,9 +44,9 @@ export default function ActionCard({ aircraft, actionDate, className = "", remov
 
             <div className={className + "bg-op-card w-3/12 text-center pb-3 rounded-md"}>
                 <img src={aircraft.featured_photo_url} className="w-fit rounded-md" />
-                <p className="uppercase my-3 text-xl">{aircraft.reg}</p>
+                <p className="uppercase my-3 text-xl"><a href={`/aircraft/${aircraft.id}`} className="underline">{aircraft.reg}</a></p>
                 {showActionDate ?
-                    <p className="mb-3">Liked {moment(actionDate).calendar()}</p>
+                    <p className="mb-3">{ action === "likes" ? "Liked" : "Disliked" || "Interacted with on" } {moment(actionDate).calendar()}</p>
                     :
                     <></>
                 }

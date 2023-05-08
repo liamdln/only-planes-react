@@ -1,16 +1,9 @@
-import { httpDelete } from "@/api"
-import Swal from "sweetalert2"
+import { httpDelete, post } from "@/api"
 
 export async function deleteComment(commentId) {
-    await httpDelete(`/api/comments?commentId=${commentId}`)
-        .catch(() => {
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Could not delete comment.",
-                footer: "If this continues, please contact the web administrator.",
-            })
-        })
-
+    return await httpDelete(`/api/comments?commentId=${commentId}`);
 }
 
+export async function editComment(commentId, newContent) {
+    return await post(`/api/comments/edit?commentId=${commentId}`, { content: newContent });
+}

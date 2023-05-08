@@ -15,7 +15,7 @@ export default function Authenticated({ children }) {
 
     return (
         <>
-            <AddAircraftModal visibility={showAddAircraftModal} setVisibility={setShowAddAircraftModal} />
+            <AddAircraftModal visibility={showAddAircraftModal} setVisibility={setShowAddAircraftModal} context={ "Add" } />
             <div className="text-white min-h-screen bg-op-darkblue">
                 <nav className="mb-5">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
