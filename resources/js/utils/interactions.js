@@ -1,5 +1,15 @@
-import { httpDelete } from "@/api";
+import { httpDelete, post } from "@/api";
+import { addNotification } from "./notifications";
 
 export async function removeOpinion(aircraftId) {
     return await httpDelete(`/interactions?aircraftId=${aircraftId}`);
+}
+
+export async function addOpinion(userId, aircraft, opinion) {
+
+    return await post("/api/opinions", { userId, aircraftId: aircraft.id, opinion }).then(async (res) => {
+        const opinionId = res.payload;
+        return await addNotification(userId, aircraft.user_id, aircraft.id, opinionId, "opinion");
+    })
+
 }

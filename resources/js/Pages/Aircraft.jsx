@@ -18,7 +18,7 @@ export default function Aircraft({ auth, aircraft }) {
         Swal.fire({
             icon: "question",
             title: "Are you sure?",
-            text: `Are you sure you want to delete ${aircraftReg.toUpperCase()}?`,
+            text: `Are you sure you want to delete ${aircraft["reg"].toUpperCase()}?`,
             showConfirmButton: true,
             showDenyButton: true,
             confirmButtonText: "Delete",
@@ -48,13 +48,20 @@ export default function Aircraft({ auth, aircraft }) {
         <UserProvider user={auth.user}>
             <AuthenticatedLayout >
                 <Head title={aircraft.reg.toUpperCase()}></Head>
-                <AddAircraftModal visibility={showModal} setVisibility={setShowModal} aircraft={aircraft} context={ "Edit" } />
+                <AddAircraftModal visibility={showModal} setVisibility={setShowModal} aircraft={aircraft} context={"Edit"} />
                 <div className="w-full flex justify-center">
                     <Profile aircraft={aircraft}>
-                        <div className="flex gap-3 justify-center">
-                            <DangerButtonEvent onClick={() => handleDeleteAircraft()}>Delete Aircraft</DangerButtonEvent>
-                            <PrimaryButtonEvent onClick={() => handleAircraftEdit()}>Edit Aircraft</PrimaryButtonEvent>
-                        </div>
+                        {
+                            aircraft.user_id === auth.user.id || auth.user.role === "Admin"
+                                ?
+                                <div className="flex gap-3 justify-center">
+                                    <DangerButtonEvent onClick={() => handleDeleteAircraft()}>Delete Aircraft</DangerButtonEvent>
+                                    <PrimaryButtonEvent onClick={() => handleAircraftEdit()}>Edit Aircraft</PrimaryButtonEvent>
+                                </div>
+                                :
+                                <></>
+                        }
+
                     </Profile>
                 </div>
             </AuthenticatedLayout>

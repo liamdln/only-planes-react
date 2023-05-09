@@ -1,17 +1,32 @@
 import { httpDelete, post } from "@/api";
 
-export async function removeAircraft(aircraftId) {
-    return await httpDelete(`/api/aircraft/delete?aircraftId=${aircraftId}`);
+export function removeAircraft(aircraftId) {
+    return new Promise((resolve, reject) => {
+        httpDelete(`/api/aircraft/delete?aircraftId=${aircraftId}`).then((res) => {
+            resolve(res);
+        }).catch((err) => {
+            reject(err);
+        })
+    })
 }
 
-export async function editAircraft(id, formData) {
-    return await post(`/api/aircraft/edit?aircraftId=${id}`, formData).then((res) => {
-        return res.payload || res;
-    });
+export function editAircraft(id, formData) {
+    return new Promise((resolve, reject) => {
+        post(`/api/aircraft/edit?aircraftId=${id}`, formData).then((res) => {
+            resolve(res);
+        }).catch((err) => {
+            console.log("ERROR");
+            reject(err);
+        })
+    })
 }
 
-export async function addAircraft(formData) {
-    return await post("/api/aircraft/create", formData).then((res) => {
-        return res.payload || res;
-    });
+export function addAircraft(formData) {
+    return new Promise((resolve, reject) => {
+        post("/api/aircraft/create", formData).then((res) => {
+            resolve(res);
+        }).catch((err) => {
+            reject(err);
+        })
+    })
 }

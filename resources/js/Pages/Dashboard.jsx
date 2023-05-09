@@ -4,6 +4,7 @@ import Profile from "@/Components/Profile";
 import { UserProvider } from "@/Contexts/UserContext";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { get, post } from "@/api";
+import { addOpinion } from "@/utils/interactions";
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
@@ -77,9 +78,12 @@ export default function Dashboard({ auth }) {
         }
     }
 
-    const postAction = async (opinion, aircraftId) => {
-        const url = "/api/opinions";
-        await post(url, { userId: auth.user.id, aircraftId, opinion }).then(() => nextAircraft()).catch(() => {
+    const postAction = async (opinion, aircraft) => {
+        setLoading(true);
+        await addOpinion(auth.user.id, aircraft, opinion).then(() => {
+            console.log("RUN");
+            nextAircraft();
+        }).catch(() => {
             Swal.fire({
                 icon: "error",
                 title: "Error",
@@ -87,6 +91,7 @@ export default function Dashboard({ auth }) {
                 footer: "If this continues, please contact the web administrator.",
             })
         })
+        setLoading(false);
     }
 
     if (aircraftList.length < 1 && !loading) {
@@ -112,7 +117,7 @@ export default function Dashboard({ auth }) {
                 <Head title="Dashboard" />
                 {/* height of div: 100vh - navbar height - navbar bottom margin */}
                 <div className="flex justify-center" style={{ height: "calc(100vh - 64px - 20px)" }}>
-                    <ActionButton disabled={ loading } type="dislike" onClick={() => postAction("dislike", aircraftList[currentAircraftIndex].id)}></ActionButton>
+                    <ActionButton disabled={ loading } type="dislike" onClick={() => postAction("dislike", aircraftList[currentAircraftIndex])}></ActionButton>
                     {loading
                         ?
                         <div className="max-w-screen-lg w-full flex justify-center items-center">
@@ -130,7 +135,7 @@ export default function Dashboard({ auth }) {
                             aircraft={aircraftList[currentAircraftIndex]}
                         >
                         </Profile>}
-                    <ActionButton disabled={loading} type="like" onClick={() => postAction("like", aircraftList[currentAircraftIndex].id)}></ActionButton>
+                    <ActionButton disabled={loading} type="like" onClick={() => postAction("like", aircraftList[currentAircraftIndex])}></ActionButton>
                 </div>
             </AuthenticatedLayout>
         </UserProvider>

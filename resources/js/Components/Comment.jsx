@@ -20,6 +20,7 @@ export default function Comment({ comment, deleteComment, formatOption = 1, rese
     // content
     // on aircraft reg on date
 
+    moment().local("en-gb");
     const user = useContext(UserContext)
     const [commentContent, setCommentContent] = useState("");
     const [showModal, setShowModal] = useState(false);

@@ -125,6 +125,18 @@ class AircraftController extends Controller
 
     public function edit(Request $request)
     {
+
+        $aircraft_id = $request->query("aircraftId");
+        $aircraft = DB::table("aircraft")->where("id", "=", $aircraft_id);
+        $aircraft_owner = $aircraft->select("user_id")->get();
+
+        if ($aircraft_owner[0]->user_id != $request->user()->id) {
+            return response()->json([
+                "status" => "error",
+                "message" => "You are not authorized to perform that action."
+            ], 403);
+        }
+
         $reg = $request->registration;
         $make = $request->make;
         $model = $request->model;
@@ -140,8 +152,6 @@ class AircraftController extends Controller
                 "message" => "Not all data was sent with the request."
             ], 400);
         }
-
-        $aircraft_id = $request->query("aircraftId");
 
         if ($new_image) {
             $file_url = DB::table("aircraft")->select("featured_photo_url")->where("id", "=", $aircraft_id)->get();
@@ -164,9 +174,7 @@ class AircraftController extends Controller
             $request->aircraft_image->move(public_path("images"), $new_image_name);
         }
 
-        $aircraft = DB::table("aircraft")->select("*")->where("id", "=", $aircraft_id);
-
-        if ($aircraft->count() < 1) {
+        if ($aircraft->select("*")->count() < 1) {
             return response()->json([
                 "status" => "error",
                 "message" => "Aircraft not found."

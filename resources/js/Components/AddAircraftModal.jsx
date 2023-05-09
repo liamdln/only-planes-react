@@ -61,12 +61,12 @@ export default function AddAircraftModal({ visibility, setVisibility, aircraft =
                     text: "Aircraft has been updated.",
                 }).then(() => {
                     window.location.reload(false);
-                }).catch(() => {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error!",
-                        text: "Could not edit aircraft."
-                    })
+                })
+            }).catch(() => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error!",
+                    text: "Could not edit aircraft."
                 })
             })
 

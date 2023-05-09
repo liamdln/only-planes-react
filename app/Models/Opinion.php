@@ -41,4 +41,13 @@ class Opinion extends Model
         return $this->belongsTo(Aircraft::class);
     }
 
+    /**
+     * Creates a polymorphic 1:1 relationship between Notifications and Opinions.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo Inverse side of polymorphic 1:1 relationship.
+     */
+    public function notification() {
+        return $this->morphTo(Notifications::class, "notifiable");
+    }
+
 }

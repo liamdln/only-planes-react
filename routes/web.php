@@ -9,6 +9,7 @@ use App\Http\Controllers\ImageController;
 use App\Http\Controllers\OpinionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\NotificationsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,9 +44,14 @@ Route::middleware('auth')->group(function () {
 
     // profile
     Route::get("/profile/{id}", [ProfileController::class, "index"]);
+    Route::get("/profile/edit/{id}", [ProfileController::class, "edit"]);
 
     // aircraft
     Route::get("/aircraft/{id}", [AircraftController::class, "aircraftPage"]);
+
+    // notifications
+    Route::get("/notifications", [NotificationsController::class, "index"]);
+
 });
 
 // files
@@ -93,6 +99,12 @@ Route::prefix("/api")->group(function () {
         // Actions
         Route::controller(OpinionController::class)->group(function () {
             Route::post("/opinions", "store");
+        });
+
+        // Notifications
+        Route::controller(NotificationsController::class)->group(function () {
+            Route::post("/notifications", "store");
+            Route::delete("/notifications", "destroy");
         });
 
         // comments

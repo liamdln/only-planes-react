@@ -54,14 +54,36 @@ class OpinionController extends Controller
     public function store(Request $request)
     {
         $userId = $request->input("userId");
+
+        if ($userId != $request->user()->id) {
+            return response()->json([
+                "status" => "error",
+                "message" => "You do not have permission to perform this action."
+            ], 403);
+        }
+
         $aircraftId = $request->input("aircraftId");
         $opinion = $request->input("opinion");
-        DB::table("opinions")->insert([
-            "user_id" => $userId,
-            "aircraft_id" => $aircraftId,
-            "opinion" => $opinion,
-            "created_at" => date("Y-m-d H:i:s")
-        ]);
+
+        try {
+            $opinionId = DB::table("opinions")->insertGetId([
+                "user_id" => $userId,
+                "aircraft_id" => $aircraftId,
+                "opinion" => $opinion,
+                "created_at" => date("Y-m-d H:i:s")
+            ]);
+        } catch (Exception $e) {
+            // dd($e);
+            return response()->json([
+                "status" => "error",
+                "message" => "Could not post opinion."
+            ], 500);
+        }
+
+        return response()->json([
+            "status" => "success",
+            "payload" => $opinionId
+        ], 201);
     }
 
     /**

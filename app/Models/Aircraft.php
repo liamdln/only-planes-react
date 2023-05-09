@@ -47,25 +47,14 @@ class Aircraft extends Model
     }
 
     /**
-     * Creates a one-to-many relationship between Aircraft and AdditionalPhotos.
-     * An aircraft has many additional photos.
+     * Creates a one-to-many relationship between Aircraft and Opinions.
+     * An aircraft has many opinions.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany 1:Many relationship.
      */
-    public function additionalPhotos()
+    public function opinions()
     {
-        return $this->hasMany(AdditionalPhotos::class);
-    }
-
-    /**
-     * Creates a one-to-many relationship between Aircraft and Likes.
-     * An aircraft has many likes.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany 1:Many relationship.
-     */
-    public function likes()
-    {
-        return $this->hasMany(Likes::class);
+        return $this->hasMany(Opinion::class);
     }
 
 }

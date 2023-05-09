@@ -46,25 +46,14 @@ class User extends Authenticatable
     }
 
     /**
-     * Creates a one-to-many relationship between Likes and User.
-     * A user likes many aircraft.
+     * Creates a one-to-many relationship between Opinions and User.
+     * A user has an opinion on many aircraft.
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany 1:Many relationship.
      */
-    public function likes()
+    public function opinions()
     {
-        return $this->hasMany(Likes::class);
-    }
-
-    /**
-     * Creates a one-to-many relationship between AdditionalPhotos and User.
-     * A user has many additional photos.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany 1:Many relationship.
-     */
-    public function additionalPhotos()
-    {
-        return $this->hasMany(AdditionalPhotos::class);
+        return $this->hasMany(Opinion::class);
     }
 
     /**

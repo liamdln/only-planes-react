@@ -1,13 +1,12 @@
 import { MapContainer, TileLayer, Popup, Marker, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useContext, useEffect, useState } from "react"
-import { get, httpDelete, post } from "@/api";
+import { get} from "@/api";
 import TextArea from "./TextArea";
 import PrimaryButton from "./PrimaryButton";
 import Swal from "sweetalert2";
-import moment from "moment";
 import { UserContext } from "@/Contexts/UserContext";
-import { deleteComment } from "@/utils/comments";
+import { addComment, deleteComment } from "@/utils/comments";
 import Comment from "./Comment";
 
 function MapMover({ position }) {
@@ -33,24 +32,25 @@ export default function Profile({ aircraft, className = "", children, setLoading
         setAircraftPos([aircraft.location_lat, aircraft.location_lng]);
     }, [aircraft.reg]);
 
-    const submitComment = async (e) => {
+    const submitComment = (e) => {
         e.preventDefault();
         setSubmitCommentLoading(true);
-        await post("/api/comments", { comment: comment, aircraftId: aircraft.id })
-            .then((res) => {
-                const newComment = { content: comment, author: loggedInUser.name, author_id: loggedInUser.id, date: new Date(), id: res.id }
-                setComments([...comments, newComment])
-                setSubmitCommentLoading(false);
-            }).catch((err) => {
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Could not post a comment.",
-                    footer: "If this continues, please contact the web administrator.",
-                })
-                setSubmitCommentLoading(false);
+
+        addComment(comment, aircraft, loggedInUser.id).then((res) => {
+            const newComment = { content: comment, author: loggedInUser.name, author_id: loggedInUser.id, date: new Date(), id: res.id }
+            setComments([...comments, newComment])
+            setSubmitCommentLoading(false);
+            setComment("");
+        }).catch((e) => {
+            console.log(e);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Could not post a comment.",
+                footer: "If this continues, please contact the web administrator.",
             })
-        setComment("");
+            setSubmitCommentLoading(false);
+        })
     }
 
     const getUserAndComments = async (user_id) => {
