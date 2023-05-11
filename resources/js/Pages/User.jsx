@@ -2,9 +2,8 @@ import ActionCard from "@/Components/ActionCard";
 import PrimaryButtonEvent from "@/Components/PrimaryButtonEvent";
 import { UserProvider } from "@/Contexts/UserContext";
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { get, httpDelete } from "@/api";
+import { get } from "@/api";
 import { Head } from '@inertiajs/react';
-import moment from "moment";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { deleteComment } from "@/utils/comments";
@@ -53,6 +52,7 @@ export default function UserProfile({ auth, userDetails, userAircraft, userComme
 
     const formatComments = async () => {
         setCommentsLoading(true);
+        // append the aircraft details to each comment
         const commentsFromDb = userComments;
         for (let i = 0; i < commentsFromDb.length; i++) {
             commentsFromDb[i].authorName = userDetails.name;

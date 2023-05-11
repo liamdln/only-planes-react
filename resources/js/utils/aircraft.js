@@ -15,7 +15,6 @@ export function editAircraft(id, formData) {
         post(`/api/aircraft/edit?aircraftId=${id}`, formData).then((res) => {
             resolve(res);
         }).catch((err) => {
-            console.log("ERROR");
             reject(err);
         })
     })

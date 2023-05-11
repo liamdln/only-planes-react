@@ -1,4 +1,5 @@
 export default function DangerButtonEvent({ className = '', disabled, children, onClick }) {
+    // same as a danger button but has an onClick event attached to it
     return (
         <button
             onClick={() => { onClick() }}

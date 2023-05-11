@@ -81,7 +81,6 @@ export default function Dashboard({ auth }) {
     const postAction = async (opinion, aircraft) => {
         setLoading(true);
         await addOpinion(auth.user.id, aircraft, opinion).then(() => {
-            console.log("RUN");
             nextAircraft();
         }).catch(() => {
             Swal.fire({

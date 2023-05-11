@@ -6,12 +6,12 @@ import PrimaryButtonEvent from "@/Components/PrimaryButtonEvent";
 import FileUploadInput from "./FileUpload";
 import { useState } from "react";
 import Swal from "sweetalert2";
-import { post } from "@/api";
 import { addAircraft, editAircraft } from "@/utils/aircraft";
+
+const AIRCRAFT_IMAGE_TAG = "aircraft_image"
 
 export default function AddAircraftModal({ visibility, setVisibility, aircraft = {}, context }) {
 
-    const aircraftImageTag = "aircraft_image"
     const [formState, setFormState] = useState({
         registration: aircraft.reg || "",
         make: aircraft.make || "",
@@ -23,11 +23,12 @@ export default function AddAircraftModal({ visibility, setVisibility, aircraft =
     const [loading, setLoading] = useState(false);
 
     const handleAircraftUpload = async () => {
-
         setLoading(true);
 
+        // pack the data into form data
+        // so it can be sent with the
+        // image
         const formData = new FormData();
-
         if (!formState.registration
             || !formState.make
             || !formState.model
@@ -46,13 +47,18 @@ export default function AddAircraftModal({ visibility, setVisibility, aircraft =
             return;
         }
 
+        // append the data from the form
+        // currently in JSON format
         for (const key in formState) {
             formData.append(key, formState[key]);
         }
 
+        // determine whether this is an edit or a new aircraft
         if (context === "Edit") {
             if (aircraftImage) {
-                formData.append(aircraftImageTag, aircraftImage);
+                // append the aircraft image if a new one
+                // has been uploaded
+                formData.append(AIRCRAFT_IMAGE_TAG, aircraftImage);
                 formData.append("imageAttached", true);
             }
             await editAircraft(aircraft.id, formData).then(() => {
@@ -60,6 +66,9 @@ export default function AddAircraftModal({ visibility, setVisibility, aircraft =
                     icon: "success",
                     text: "Aircraft has been updated.",
                 }).then(() => {
+                    // reload to get new data
+                    // could get the aircraft back from the
+                    // endpoint and update?
                     window.location.reload(false);
                 })
             }).catch(() => {
@@ -71,12 +80,16 @@ export default function AddAircraftModal({ visibility, setVisibility, aircraft =
             })
 
         } else {
-            formData.append(aircraftImageTag, aircraftImage);
+            // add the image as it is required when
+            // an aircraft is added.
+            formData.append(AIRCRAFT_IMAGE_TAG, aircraftImage);
             await addAircraft(formData).then((res) => {
                 Swal.fire({
                     icon: "success",
                     text: "Aircraft has been added.",
                 }).then(() => {
+                    // if an aircraft was created then
+                    // go to its profile
                     if (res.payload) {
                         document.location.href = `/aircraft/${res.payload}`;
                     } else {
@@ -162,7 +175,7 @@ export default function AddAircraftModal({ visibility, setVisibility, aircraft =
                             <InputLabel htmlFor="reg" className="text-white">{context === "Edit" ? "Change Image (optional)" : "Upload Image"}</InputLabel>
                             <FileUploadInput
                                 setFiles={setAircraftImage}
-                                inputName={aircraftImageTag}
+                                inputName={AIRCRAFT_IMAGE_TAG}
                                 accept="image/*"
                                 footerText="PNG or JPG (MAX 512MB)." />
                         </div>

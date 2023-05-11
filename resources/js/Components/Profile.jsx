@@ -1,21 +1,30 @@
 import { MapContainer, TileLayer, Popup, Marker, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useContext, useEffect, useState } from "react"
-import { get} from "@/api";
+import { get } from "@/api";
 import TextArea from "./TextArea";
 import PrimaryButton from "./PrimaryButton";
 import Swal from "sweetalert2";
 import { UserContext } from "@/Contexts/UserContext";
 import { addComment, deleteComment } from "@/utils/comments";
 import Comment from "./Comment";
+import PrimaryButtonEvent from "./PrimaryButtonEvent";
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
+// move the map to the new profile location
+// when the profile is changed.
+// cannot be in the page component as
+// leaflet handles state differently to
+// react. This function can still be
+// accessed by the map
 function MapMover({ position }) {
     const map = useMap();
     map.invalidateSize()
     map.setView(position, map.getZoom());
 }
 
-export default function Profile({ aircraft, className = "", children, setLoading }) {
+export default function Profile({ aircraft, className = "", children }) {
 
     const [aircraftPos, setAircraftPos] = useState([aircraft.location_lat, aircraft.location_lng]);
     const [user, setUser] = useState({});
@@ -24,21 +33,42 @@ export default function Profile({ aircraft, className = "", children, setLoading
     const [commentsLoading, setCommentsLoading] = useState(true);
     const [knownUsers, setKnownUsers] = useState({});
     const [submitCommentLoading, setSubmitCommentLoading] = useState(false);
+    const [totalCommentPages, setTotalCommentPages] = useState(0);
+    const [currentCommentPage, setCurrentCommentPage] = useState(0);
     const loggedInUser = useContext(UserContext);
 
+    // reset the leaflet icon
+    // as it cannot be accessed by the
+    // react app once it has been built
+    let DefaultIcon = L.icon({
+        iconUrl: icon,
+        shadowUrl: iconShadow
+    });
+
+    L.Marker.prototype.options.icon = DefaultIcon;
+
     useEffect(() => {
+        // update the name, aircraft position, and total comment pages
+        // when the reg of the aircraft changes.
         setUser({ name: "Getting name..." })
-        getUserAndComments(aircraft.user_id, true);
         setAircraftPos([aircraft.location_lat, aircraft.location_lng]);
+        setTotalCommentPages(0);
     }, [aircraft.reg]);
+
+    useEffect(() => {
+        // update the user and comments when
+        // the comments page changes.
+        // run on first load as well
+        getUserAndComments(aircraft.user_id);
+    }, [currentCommentPage])
 
     const submitComment = (e) => {
         e.preventDefault();
         setSubmitCommentLoading(true);
 
         addComment(comment, aircraft, loggedInUser.id).then((res) => {
-            const newComment = { content: comment, author: loggedInUser.name, author_id: loggedInUser.id, date: new Date(), id: res.id }
-            setComments([...comments, newComment])
+            const newComment = { content: comment, author: loggedInUser.name, author_id: loggedInUser.id, date: new Date(), id: res }
+            setComments([newComment, ...comments])
             setSubmitCommentLoading(false);
             setComment("");
         }).catch((e) => {
@@ -53,26 +83,39 @@ export default function Profile({ aircraft, className = "", children, setLoading
         })
     }
 
-    const getUserAndComments = async (user_id) => {
+    const getUserAndComments = async (user_id = 0) => {
         setCommentsLoading(true);
         setComments([]);
         try {
-            const userArray = await get(`/api/users/${user_id}`);
-            const aircraftOwner = userArray[0];
-            setUser(aircraftOwner);
-            setKnownUsers({ ...knownUsers, [aircraftOwner.id]: aircraftOwner.name })
+            // get the user if it hasn't been done already
+            if (!user.name || !user.id) {
+                const userArray = await get(`/api/users/${user_id}`);
+                const aircraftOwner = userArray[0];
+                setUser(aircraftOwner);
+                setKnownUsers({ ...knownUsers, [aircraftOwner.id]: aircraftOwner.name })
+            }
 
-            const comments = await get(`/api/comments?aircraftId=${aircraft.id}`);
-            for (let i = 0; i < comments.length; i++) {
-                if (Object.keys(knownUsers).includes(comments[i].author_id)) {
-                    comments[i].author = knownUsers[comments[i].author_id];
+            const comments = await get(`/api/comments/${currentCommentPage + 1}?aircraftId=${aircraft.id}`);
+
+            // go through each comment and get the user who made the comment
+            for (let i = 0; i < comments.payload.length; i++) {
+                if (Object.keys(knownUsers).includes(comments.payload[i].author_id)) {
+                    comments.payload[i].author = knownUsers[comments.payload[i].author_id];
                 } else {
-                    const commentUser = await get(`/api/users/${comments[i].author_id}`);
-                    comments[i].author = commentUser[0].name;
-                    setKnownUsers({ ...knownUsers, [comments[i].author_id]: commentUser[0].name })
+                    const commentUser = await get(`/api/users/${comments.payload[i].author_id}`);
+                    comments.payload[i].author = commentUser[0].name;
+                    setKnownUsers({ ...knownUsers, [comments.payload[i].author_id]: commentUser[0].name })
                 }
             }
-            setComments(comments);
+
+            // determine the number of comment pages required
+            // always have at least 1
+            let numCommentPages = Math.ceil(comments.totalComments / comments.commentsPerPage)
+            if (numCommentPages === 0) {
+                numCommentPages = 1;
+            }
+            setTotalCommentPages(numCommentPages);
+            setComments(comments.payload);
             setCommentsLoading(false);
         } catch (e) {
             console.log(e);
@@ -100,8 +143,20 @@ export default function Profile({ aircraft, className = "", children, setLoading
             denyButtonColor: "#00C853"
         }).then(async (response) => {
             if (response.isConfirmed) {
+
+                // if the last comment on a page is deleted, and
+                // we are not on the first page, then move back
+                // one page
+                let willMovePage = false;
+                if (comments.length < 2 && currentCommentPage !== 0) {
+                    willMovePage = true;
+                }
                 await deleteComment(commentId).then(() => {
-                    setComments(comments.filter((comment) => comment.id != commentId));
+                    const newComments = comments.filter((comment) => comment.id != commentId)
+                    setComments(newComments);
+                    if (willMovePage) {
+                        setCurrentCommentPage(currentCommentPage - 1);
+                    }
                 }).catch(() => [
                     Swal.fire({
                         icon: "error",
@@ -121,7 +176,12 @@ export default function Profile({ aircraft, className = "", children, setLoading
                 </div>
                 <div className="text-center items-center my-3">
                     <p className="uppercase text-5xl mb-1">{aircraft.reg}</p>
-                    <p className="">Submitted by: {<a href={`/profile/${user.id}`} className="underline text-white">{user.name}</a> || "Getting name..."}</p>
+                    {user.name && user.id ?
+                        <p className="">Submitted by: <a href={`/profile/${user.id}`} className="underline text-white">{user.name}</a></p>
+                        :
+                        <p className="">Submitted by: Getting name...</p>
+                    }
+
                 </div>
                 <div className="text-start p-10">
                     <ul>
@@ -182,15 +242,33 @@ export default function Profile({ aircraft, className = "", children, setLoading
                                         id="comment"
                                         type="text"
                                         name="comment"
-                                        className="mt-1 block w-full bg-op-darkblue max-h-40 min-h-fit"
+                                        className={`mt-1 block w-full bg-op-darkblue max-h-40 min-h-fit ${commentsLoading ? "hidden" : ""}`}
                                         isFocused={true}
                                         placeholder="Enter comment..."
                                         required
                                         value={comment}
                                         onChange={(e) => setComment(e.target.value)}
                                     />
-                                    <div className="flex justify-end">
-                                        <PrimaryButton className="mt-2" disabled={submitCommentLoading}>Submit</PrimaryButton>
+                                    <div className={`flex justify-between mt-2 max-w-full ${commentsLoading ? "hidden" : ""}`}>
+                                        <div className={`flex flex-wrap gap-2`}>
+                                            <PrimaryButtonEvent type="button" disabled={currentCommentPage === 0 || totalCommentPages === 0} onClick={(() => {
+                                                setCurrentCommentPage(0);
+                                            })}>{"<<"}</PrimaryButtonEvent>
+                                            {[...Array(totalCommentPages)].map((_, index) => {
+                                                return (
+                                                    <PrimaryButtonEvent key={index} disabled={currentCommentPage === index} type="button" onClick={(() => {
+                                                        setCurrentCommentPage(index);
+                                                    })}>{index + 1}</PrimaryButtonEvent>
+                                                )
+                                            })}
+
+                                            <PrimaryButtonEvent disabled={currentCommentPage === totalCommentPages - 1 || totalCommentPages === 0} type="button" onClick={(() => {
+                                                setCurrentCommentPage(totalCommentPages - 1);
+                                            })}>{">>"}</PrimaryButtonEvent>
+                                        </div>
+                                        <div className="flex justify-end ms-10">
+                                            <PrimaryButton disabled={submitCommentLoading}>Submit</PrimaryButton>
+                                        </div>
                                     </div>
                                 </div>
                             </form>

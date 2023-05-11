@@ -8,7 +8,7 @@ import DangerButtonEvent from "./DangerButtonEvent";
 import Swal from "sweetalert2";
 import { editComment } from "@/utils/comments";
 
-export default function Comment({ comment, deleteComment, formatOption = 1, resetComment }) {
+export default function Comment({ comment, deleteComment, formatOption = 1 }) {
 
     // format options:
     // 1:
@@ -41,6 +41,7 @@ export default function Comment({ comment, deleteComment, formatOption = 1, rese
             setUpdatingComment(false);
             return;
         }
+
         await editComment(comment.id, commentContent).catch(() => {
             Swal.fire({
                 icon: "error",
@@ -49,7 +50,6 @@ export default function Comment({ comment, deleteComment, formatOption = 1, rese
             })
         });
         comment.content = commentContent;
-        // resetComment(comment)
         setUpdatingComment(false);
         setShowModal(false);
     }
@@ -86,7 +86,7 @@ export default function Comment({ comment, deleteComment, formatOption = 1, rese
                             <div className="max-w-full">{comment.content}</div>
                             <div className="text-op-card-secondary">
                                 <em>
-                                    - <a className="underline" href={`/profile/${comment.author_id}`}> {comment.author || comment.author_id}</a>, {moment(comment.date).calendar()}
+                                    - <a className="underline" href={`/profile/${comment.author_id}`}> {comment.author || comment.author_id}</a>, {moment(comment.updated_at).calendar()}
                                 </em>
                             </div>
                         </>
@@ -101,7 +101,7 @@ export default function Comment({ comment, deleteComment, formatOption = 1, rese
                             <div className="max-w-full">{comment.content}</div>
                             <div className="text-op-card-secondary">
                                 <em>
-                                    on <a className="underline uppercase" href={`/aircraft/${comment.aircraft_id}`}>{comment.aircraft_reg}</a> on {moment(comment.date).calendar()}
+                                    on <a className="underline uppercase" href={`/aircraft/${comment.aircraft_id}`}>{comment.aircraft_reg}</a> on {moment(comment.updated_at).calendar()}
                                 </em>
                             </div>
                         </>

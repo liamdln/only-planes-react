@@ -17,6 +17,8 @@ export default function UpdatePasswordForm({ className = '' }) {
 
         setLoading(true);
 
+        // ensure the new password matches the password in the confirm text box
+        // and that it is not the same as the password in the current password text box.
         if (userPassword.newPassword === userPassword.confirmNewPassword && userPassword.currentPassword !== userPassword.newPassword) {
             await put(route("password.update"), {
                 current_password: userPassword.currentPassword,
@@ -29,7 +31,6 @@ export default function UpdatePasswordForm({ className = '' }) {
                 })
                 setLoading(false);
             }).catch((err) => {
-                console.log();
                 Swal.fire({
                     icon: "error",
                     title: "Error",

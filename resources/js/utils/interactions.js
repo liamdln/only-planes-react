@@ -7,9 +7,9 @@ export async function removeOpinion(aircraftId) {
 
 export async function addOpinion(userId, aircraft, opinion) {
 
-    return await post("/api/opinions", { userId, aircraftId: aircraft.id, opinion }).then(async (res) => {
-        const opinionId = res.payload;
-        return await addNotification(userId, aircraft.user_id, aircraft.id, opinionId, "opinion");
+    return await post("/api/opinions", { userId, aircraftId: aircraft.id, opinion }).then((res) => {
+        addNotification(userId, aircraft.user_id, aircraft.id, res.payload, "opinion");
+        return res.payload;
     })
 
 }

@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AircraftController;
@@ -109,7 +108,7 @@ Route::prefix("/api")->group(function () {
 
         // comments
         Route::controller(CommentController::class)->group(function () {
-            Route::get("/comments", "getComments");
+            Route::get("/comments/{page}", "getPaginatedComments");
             Route::post("/comments", "store");
             // post as formdata is not sent with put request
             // bug in laravel

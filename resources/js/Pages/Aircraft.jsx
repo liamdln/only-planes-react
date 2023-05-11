@@ -28,6 +28,7 @@ export default function Aircraft({ auth, aircraft }) {
         }).then(async (response) => {
             if (response.isConfirmed) {
                 await removeAircraft(aircraft.id).then(() => {
+                    // go to the homepage when an aircraft is deleted
                     document.location.href = "/";
                 }).catch(() => {
                     Swal.fire({

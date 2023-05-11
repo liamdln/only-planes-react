@@ -7,37 +7,17 @@ use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
+     * Get a user.
+     *
+     * @param id ID of the user.
      */
     public function show(string $id)
     {
         $user = DB::table("users")->select(["name", "id"])->where("id", "=", $id)->get();
 
+        // no user
         if ($user->isEmpty()) {
             abort(404);
         }
@@ -46,29 +26,16 @@ class UserController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
+     * Delete a user.
+     *
+     * @param request HTTP request object.
      */
     public function destroy(Request $request)
     {
 
         $id = $request->query("userId");
 
+        // stop a user deleting themselves
         if ($request->user()->id == $id) {
             return response()->json([
                 "status" => "error",
@@ -79,7 +46,7 @@ class UserController extends Controller
         $current_user_power = DB::table("users")->select("role")->where("id", "=", $request->user()->id)->get();
         $user = DB::table("users")->select(["id", "role"])->where("id", "=", $id);
 
-        // ensure user is admin
+        // stop a user deleting another admin
         if ($user->get()[0]->role == "Admin") {
             return response()->json([
                 "status" => "error",
@@ -87,6 +54,8 @@ class UserController extends Controller
             ], 400);
         }
 
+        // ensure user is an admin
+        // only admins can delete users.
         if ($current_user_power[0]->role == "Admin") {
             $user->delete();
             return response()->json([

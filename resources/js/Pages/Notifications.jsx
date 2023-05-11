@@ -50,9 +50,7 @@ export default function Notifications({ auth, notifications }) {
                                     <div className="flex flex-col gap-3 mb-10">
                                         {
                                             notificationsList.map((notification, index) => {
-                                                console.log(notification)
                                                 if (notification.notifiable === "opinion") {
-                                                    console.log("OP")
                                                     return (
                                                         <div key={index} className={`bg-op-card rounded p-3`}>
                                                             <div>
@@ -67,7 +65,6 @@ export default function Notifications({ auth, notifications }) {
                                                         </div>
                                                     )
                                                 } else {
-                                                    console.log("COM")
                                                     return (
                                                         <div key={index} className={`bg-op-card rounded p-3`}>
                                                             <div>

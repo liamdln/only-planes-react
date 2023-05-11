@@ -9,16 +9,27 @@ use Inertia\Inertia;
 
 class NotificationsController extends Controller
 {
+
+    // Web routes
+
     /**
-     * Display a listing of the resource.
+     * Get the notifications page.
+     *
+     * @param request HTTP request object.
      */
     public function index(Request $request)
     {
         $notifications_from_db = DB::table("notifications")->select("*")->where("recipient_id", "=", $request->user()->id)->get();
         $notifications = [];
 
+        // go through each notification and
+        // get the record associated with the ID stored
+        // in the notification record
         foreach ($notifications_from_db as $notification) {
 
+            // can have opinions or comments
+            // the notifications have a polymorphic
+            // relationship with each
             $notifiable_type = $notification->notifiable_type;
             // dd($notifiable_type->get());
 
@@ -27,13 +38,13 @@ class NotificationsController extends Controller
                     ->select("content")
                     ->where("author_id", "=", $notification->sender_id)
                     ->where("aircraft_id", "=", $notification->post_id);
-
             } else if ($notifiable_type == "opinion") {
                 $notifiable = DB::table("opinions")
                     ->select("opinion")
                     ->where("user_id", "=", $notification->sender_id)
                     ->where("aircraft_id", "=", $notification->post_id);
             } else {
+                // no type
                 return Inertia::render("Notifications", [
                     "notifications" => []
                 ]);
@@ -45,11 +56,13 @@ class NotificationsController extends Controller
                 ]);
             }
 
+            // get information about the sender, recipient, and aircraft profile
             $notifiable = $notifiable->get();
             $sender = DB::table("users")->select(["id", "name"])->where("id", "=", $notification->sender_id)->get();
             $recipient = DB::table("users")->select(["id", "name"])->where("id", "=", $notification->recipient_id)->get();
             $aircraft = DB::table("aircraft")->select(["id", "reg"])->where("id", "=", $notification->post_id)->get();
 
+            // add all this to an array that will be rendered on the page.
             array_push($notifications, [
                 "notifiable" => $notifiable_type,
                 "notifiable_content" => $notifiable[0],
@@ -66,16 +79,12 @@ class NotificationsController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+    // API Routes
 
     /**
-     * Store a newly created resource.
+     * Create a notification
+     *
+     * @param request HTTP request object.
      */
     public function store(Request $request)
     {
@@ -93,6 +102,8 @@ class NotificationsController extends Controller
         $notifiable_id = $request->input("notifiableId");
         $notifiable_type = $request->input("notifiableType");
 
+        // try store the notification and return the ID of the
+        // new notification
         try {
             $notification_id = DB::table("notifications")->insertGetId([
                 "sender_id" => $sender_id,
@@ -117,31 +128,9 @@ class NotificationsController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
+     * Delete a notification
+     *
+     * @param request HTTP request object.
      */
     public function destroy(Request $request)
     {
@@ -157,6 +146,7 @@ class NotificationsController extends Controller
 
         $notification_recipient = $notification->select("recipient_id")->get();
 
+        // the notification does not belong to the user who is request its deletion
         if ($notification_recipient[0]->recipient_id != $request->user()->id) {
             return response()->json([
                 "status" => "error",
@@ -164,9 +154,17 @@ class NotificationsController extends Controller
             ], 403);
         }
 
-        $notification->delete();
-        return response()->json([
-            "status" => "success",
-        ], 200);
+        // try delete the notification
+        try {
+            $notification->delete();
+            return response()->json([
+                "status" => "success",
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Could not delete notification."
+            ], 500);
+        }
     }
 }
