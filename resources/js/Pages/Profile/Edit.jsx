@@ -5,7 +5,7 @@ import { Head } from '@inertiajs/react';
 import { UserProvider } from "@/Contexts/UserContext";
 import DeleteUser from "./Partials/DeleteUser";
 
-export default function EditProfile({ auth, user = {} }) {
+export default function EditProfile({ auth, user = {}, admin = False }) {
 
     return (
         <UserProvider user={auth.user}>
@@ -19,6 +19,7 @@ export default function EditProfile({ auth, user = {} }) {
                                 className="max-w-xl"
                                 user={user}
                                 loggedInUser={auth.user}
+                                admin={ admin }
                             />
                         </div>
 

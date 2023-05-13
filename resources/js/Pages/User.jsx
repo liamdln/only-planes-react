@@ -10,7 +10,7 @@ import { deleteComment } from "@/utils/comments";
 import { removeAircraft } from "@/utils/aircraft";
 import Comment from "@/Components/Comment";
 
-export default function UserProfile({ auth, userDetails, userAircraft, userComments }) {
+export default function UserProfile({ auth, userDetails, userAircraft, userComments, admin }) {
 
     const [allowRemoval, setAllowRemoval] = useState(false);
     const [aircraftProfiles, setAircraftProfiles] = useState(userAircraft || []);
@@ -19,7 +19,7 @@ export default function UserProfile({ auth, userDetails, userAircraft, userComme
     const [knownRegs, setKnownRegs] = useState({});
 
     useEffect(() => {
-        setAllowRemoval(auth.user.role === "Admin" || auth.user.id === userDetails.id);
+        setAllowRemoval(admin || auth.user.id === userDetails.id);
         formatComments();
     }, [userDetails]);
 
@@ -106,7 +106,7 @@ export default function UserProfile({ auth, userDetails, userAircraft, userComme
                             <p className="uppercase text-5xl mb-1">{userDetails.name}</p>
                         </div>
                         <div className="self-center">
-                            {auth.user.role === "Admin" || auth.user.id === userDetails.id ?
+                            {admin || auth.user.id === userDetails.id ?
                                 <PrimaryButtonEvent onClick={() => document.location.href = `/profile/edit/${userDetails.id}`}>Edit Profile</PrimaryButtonEvent>
                                 :
                                 <></>

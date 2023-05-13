@@ -11,6 +11,7 @@ import Comment from "./Comment";
 import PrimaryButtonEvent from "./PrimaryButtonEvent";
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import { getAircraftTags, getAllTags } from "@/utils/tag";
 
 // move the map to the new profile location
 // when the profile is changed.
@@ -35,6 +36,7 @@ export default function Profile({ aircraft, className = "", children }) {
     const [submitCommentLoading, setSubmitCommentLoading] = useState(false);
     const [totalCommentPages, setTotalCommentPages] = useState(0);
     const [currentCommentPage, setCurrentCommentPage] = useState(0);
+    const [tags, setTags] = useState([]);
     const loggedInUser = useContext(UserContext);
 
     // reset the leaflet icon
@@ -53,6 +55,7 @@ export default function Profile({ aircraft, className = "", children }) {
         setUser({ name: "Getting name..." })
         setAircraftPos([aircraft.location_lat, aircraft.location_lng]);
         setTotalCommentPages(0);
+        handleGetTagNames();
     }, [aircraft.reg]);
 
     useEffect(() => {
@@ -61,6 +64,21 @@ export default function Profile({ aircraft, className = "", children }) {
         // run on first load as well
         getUserAndComments(aircraft.user_id);
     }, [currentCommentPage])
+
+    const handleGetTagNames = async () => {
+        const allTags = await getAllTags();
+        const tags = await getAircraftTags(aircraft.id);
+        const formattedTags = [];
+        for (const tag of tags) {
+            // for (const apiTag of allTags) {
+            //     if (apiTag.id === tag.tag_id) {
+            //         formattedTags.push(apiTag)
+            //     }
+            // }
+            formattedTags.push(allTags.filter((tagElement) => tagElement.id === tag.tag_id)[0]);
+        }
+        setTags(formattedTags);
+    }
 
     const submitComment = (e) => {
         e.preventDefault();
@@ -89,8 +107,7 @@ export default function Profile({ aircraft, className = "", children }) {
         try {
             // get the user if it hasn't been done already
             if (!user.name || !user.id) {
-                const userArray = await get(`/api/users/${user_id}`);
-                const aircraftOwner = userArray[0];
+                const aircraftOwner = await get(`/api/profile/${user_id}`);
                 setUser(aircraftOwner);
                 setKnownUsers({ ...knownUsers, [aircraftOwner.id]: aircraftOwner.name })
             }
@@ -102,9 +119,9 @@ export default function Profile({ aircraft, className = "", children }) {
                 if (Object.keys(knownUsers).includes(comments.payload[i].author_id)) {
                     comments.payload[i].author = knownUsers[comments.payload[i].author_id];
                 } else {
-                    const commentUser = await get(`/api/users/${comments.payload[i].author_id}`);
-                    comments.payload[i].author = commentUser[0].name;
-                    setKnownUsers({ ...knownUsers, [comments.payload[i].author_id]: commentUser[0].name })
+                    const commentUser = await get(`/api/profile/${comments.payload[i].author_id}`);
+                    comments.payload[i].author = commentUser.name;
+                    setKnownUsers({ ...knownUsers, [comments.payload[i].author_id]: commentUser.name })
                 }
             }
 
@@ -181,6 +198,19 @@ export default function Profile({ aircraft, className = "", children }) {
                         :
                         <p className="">Submitted by: Getting name...</p>
                     }
+                    <p>
+                        <span className="me-2">Tags:</span>
+                        {tags.length > 0
+                            ?
+                            tags.map((tag, index) => {
+                                return (
+                                    <span key={index} className="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">{tag.name}</span>
+                                )
+                            })
+                            :
+                            <span>Loading...</span>
+                        }
+                    </p>
 
                 </div>
                 <div className="text-start p-10">

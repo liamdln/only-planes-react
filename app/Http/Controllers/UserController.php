@@ -15,7 +15,7 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        $user = DB::table("users")->select(["name", "id"])->where("id", "=", $id)->get();
+        $user = DB::table("users")->select(["id", "email"])->where("id", "=", $id)->get();
 
         // no user
         if ($user->isEmpty()) {
@@ -43,11 +43,12 @@ class UserController extends Controller
             ], 400);
         }
 
-        $current_user_power = DB::table("users")->select("role")->where("id", "=", $request->user()->id)->get();
-        $user = DB::table("users")->select(["id", "role"])->where("id", "=", $id);
+        $current_user_role = DB::table("profiles")->select("role")->where("id", "=", $request->user()->id)->get();
+        $user = DB::table("users")->where("id", "=", $id);
+        $profile = DB::table("profiles")->select("role")->where("id", "=", $id);
 
         // stop a user deleting another admin
-        if ($user->get()[0]->role == "Admin") {
+        if ($profile->get()[0]->role == "Admin") {
             return response()->json([
                 "status" => "error",
                 "message" => "Cannot delete an admin."
@@ -56,7 +57,7 @@ class UserController extends Controller
 
         // ensure user is an admin
         // only admins can delete users.
-        if ($current_user_power[0]->role == "Admin") {
+        if ($current_user_role[0]->role == "Admin") {
             $user->delete();
             return response()->json([
                 "status" => "success",

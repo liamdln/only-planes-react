@@ -5,7 +5,7 @@ import { put } from "@/api";
 import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
 
-export default function UpdateProfileInformation({ className = '', user, loggedInUser }) {
+export default function UpdateProfileInformation({ className = '', user, loggedInUser, admin }) {
 
     const [userDetails, setUserDetails] = useState({ name: user.name, email: user.email });
     const [loading, setLoading] = useState(false);
@@ -88,7 +88,7 @@ export default function UpdateProfileInformation({ className = '', user, loggedI
 
                 </div>
 
-                <div hidden={ loggedInUser.id === user.id || loggedInUser.role !== "Admin" }>
+                <div hidden={ loggedInUser.id === user.id || !admin }>
                     <InputLabel htmlFor="role" value="Role" />
                     <select id="countries"
                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"

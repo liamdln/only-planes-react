@@ -57,4 +57,25 @@ class Aircraft extends Model
         return $this->hasMany(Opinion::class);
     }
 
+    /**
+     * Creates a one-to-many relationship between Aircraft and Notifications.
+     * An aircraft belongs to many notifications.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany 1:Many relationship
+     */
+    public function notifications() {
+        return $this->hasMany(Notifications::class);
+    }
+
+    /**
+     * Create a many-to-many relationship between Tags and Aircraft.
+     * An aircraft has many tags.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\belongsToMany Many:Many relationship.
+     */
+    public function tags()
+    {
+        return $this->belongsToMany(Aircraft::class, "aircraft_tags", "aircraft_id", "tag_id");
+    }
+
 }

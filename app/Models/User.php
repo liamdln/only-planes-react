@@ -18,8 +18,6 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
         'password',
         "role",
     ];
@@ -65,6 +63,26 @@ class User extends Authenticatable
     public function comments()
     {
         return $this->hasMany(Comments::class);
+    }
+
+    /**
+     * Create a one-to-many relationship between Notifications and a user.
+     * A user has many notifications.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany 1:Many relationship.
+     */
+    public function notifications() {
+        return $this->hasMany(Notifications::class, "notifiable");
+    }
+
+    /**
+     * Create a one-to-one relationship between User and Profile.
+     * A user has one profile.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne 1:1 relationship.
+     */
+    public function profile() {
+        return $this->hasOne(Profile::class);
     }
 
 }

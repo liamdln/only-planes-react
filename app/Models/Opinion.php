@@ -44,10 +44,10 @@ class Opinion extends Model
     /**
      * Creates a polymorphic 1:1 relationship between Notifications and Opinions.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo Inverse side of polymorphic 1:1 relationship.
+     * @return \Illuminate\Database\Eloquent\Relations\morphOne Inverse side of polymorphic 1:1 relationship.
      */
     public function notification() {
-        return $this->morphTo(Notifications::class, "notifiable");
+        return $this->morphOne(Notifications::class, "notifiable");
     }
 
 }

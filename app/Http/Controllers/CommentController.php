@@ -151,7 +151,7 @@ class CommentController extends Controller
     public function edit(Request $request)
     {
         $id = $request->query("commentId");
-        $requestee_role = DB::table("users")->select("role")->where("id", "=", $request->user()->id)->get();
+        $requestee_role = DB::table("profiles")->select("role")->where("id", "=", $request->user()->id)->get();
         $commentRow = DB::table("comments")->select("*")->where("id", "=", $id);
         $comment = $commentRow->get();
         $new_comment_content = $request->input("content");
@@ -205,7 +205,7 @@ class CommentController extends Controller
     public function destroy(Request $request)
     {
         $id = $request->query("commentId");
-        $requestee_role = DB::table("users")->select("role")->where("id", "=", $request->user()->id)->get();
+        $requestee_role = DB::table("profiles")->select("role")->where("id", "=", $request->user()->id)->get();
         $comment_row = DB::table("comments")->select("*")->where("id", "=", $id);
         $comment = $comment_row->get();
 

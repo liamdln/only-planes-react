@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('aircraft_tags', function (Blueprint $table) {
             $table->id();
-            $table->string('password');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->rememberToken();
+            $table->foreignId("aircraft_id")->references("id")->on("aircraft")->onDelete("cascade")->onUpdate("cascade");
+            $table->foreignId("tag_id")->references("id")->on("tags")->onDelete("cascade")->onUpdate("cascade");
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('aircraft_tags');
     }
 };

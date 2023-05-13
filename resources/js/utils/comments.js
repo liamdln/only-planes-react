@@ -11,6 +11,7 @@ export async function editComment(commentId, newContent) {
 
 export async function addComment(comment, aircraft, userId) {
     return await post("/api/comments", { comment, aircraftId: aircraft.id }).then((res) => {
+        console.log(res.payload)
         addNotification(userId, aircraft.user_id, aircraft.id, res.payload, "comment");
         return res.payload;
     });

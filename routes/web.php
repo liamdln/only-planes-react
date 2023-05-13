@@ -9,6 +9,7 @@ use App\Http\Controllers\OpinionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\NotificationsController;
+use App\Http\Controllers\TagController;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,12 +87,12 @@ Route::prefix("/api")->group(function () {
 
         // user
         Route::controller(UserController::class)->group(function () {
-            Route::get("/users/{id}", "show");
-            Route::delete("/profile/delete", "destroy");
+            Route::delete("/user/delete", "destroy");
         });
 
         // profile
         Route::controller(ProfileController::class)->group(function () {
+            Route::get("/profile/{id}", "show"); // change to profile
             Route::put("/profile/edit/{id}", "updateDetails");
         });
 
@@ -114,6 +115,13 @@ Route::prefix("/api")->group(function () {
             // bug in laravel
             Route::post("/comments/edit", "edit");
             Route::delete("/comments", "destroy");
+        });
+
+        // tags
+        Route::controller(TagController::class)->group(function () {
+            Route::get("/tags", "get");
+            Route::get("/tag", "getById");
+            Route::get("/tags/for", "getTagsForAircraft");
         });
 
     });

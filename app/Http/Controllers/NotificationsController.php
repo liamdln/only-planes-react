@@ -19,64 +19,88 @@ class NotificationsController extends Controller
      */
     public function index(Request $request)
     {
-        $notifications_from_db = DB::table("notifications")->select("*")->where("recipient_id", "=", $request->user()->id)->get();
+        $notifications_from_db = DB::table("notifications")
+            ->select("*")
+            ->where("recipient_id", "=", $request->user()->id)
+            ->get();
         $notifications = [];
+        $handled_comment_ids = [];
+        $handled_opinion_ids = [];
+
+        // echo ($notifications_from_db);
 
         // go through each notification and
         // get the record associated with the ID stored
         // in the notification record
-        foreach ($notifications_from_db as $notification) {
+        try {
 
-            // can have opinions or comments
-            // the notifications have a polymorphic
-            // relationship with each
-            $notifiable_type = $notification->notifiable_type;
-            // dd($notifiable_type->get());
+            foreach ($notifications_from_db as $notification) {
 
-            if ($notifiable_type == "comment") {
-                $notifiable = DB::table("comments")
-                    ->select("content")
-                    ->where("author_id", "=", $notification->sender_id)
-                    ->where("aircraft_id", "=", $notification->post_id);
-            } else if ($notifiable_type == "opinion") {
-                $notifiable = DB::table("opinions")
-                    ->select("opinion")
-                    ->where("user_id", "=", $notification->sender_id)
-                    ->where("aircraft_id", "=", $notification->post_id);
-            } else {
-                // no type
-                return Inertia::render("Notifications", [
-                    "notifications" => []
+                // can have opinions or comments
+                // the notifications have a polymorphic
+                // relationship with each
+                $notifiable_type = $notification->notifiable_type;
+                $notifiable = null;
+
+                if ($notifiable_type == "comment") {
+                    $notifiable = DB::table("comments")
+                        ->select(["content", "id"])
+                        ->where("author_id", "=", $notification->sender_id)
+                        ->where("aircraft_id", "=", $notification->post_id)
+                        ->whereNotIn("id", $handled_comment_ids);
+
+                    array_push($handled_comment_ids, $notifiable->get()[0]->id);
+                } else if ($notifiable_type == "opinion") {
+                    $notifiable = DB::table("opinions")
+                        ->select(["opinion", "id"])
+                        ->where("user_id", "=", $notification->sender_id)
+                        ->where("aircraft_id", "=", $notification->post_id)
+                        ->whereNotIn("id", $handled_opinion_ids);
+
+                    array_push($handled_opinion_ids, $notifiable->get()[0]->id);
+                } else {
+                    // no type
+                    return Inertia::render("Notifications", [
+                        "notifications" => []
+                    ]);
+                }
+
+                if ($notifiable->count() < 1) {
+                    return Inertia::render("Notifications", [
+                        "notifications" => []
+                    ]);
+                }
+                // echo ("OPINIONS: " . print_r($handled_opinion_ids) . "<br/>");
+                // echo ("COMMENTS: " . print_r($handled_comment_ids) . "<br/><br/>");
+
+                // get information about the sender, recipient, and aircraft profile
+                $notifiable = $notifiable->get();
+                $sender = DB::table("profiles")->select(["id", "name"])->where("id", "=", $notification->sender_id)->get();
+                $recipient = DB::table("profiles")->select(["id", "name"])->where("id", "=", $notification->recipient_id)->get();
+                $aircraft = DB::table("aircraft")->select(["id", "reg"])->where("id", "=", $notification->post_id)->get();
+
+                // add all this to an array that will be rendered on the page.
+                array_push($notifications, [
+                    "notifiable" => $notifiable_type,
+                    "notifiable_content" => $notifiable[0],
+                    "aircraft" => $aircraft[0],
+                    "sender" => $sender[0],
+                    "recipient" => $recipient[0],
+                    "date" => $notification->created_at,
+                    "id" => $notification->id
                 ]);
             }
 
-            if ($notifiable->count() < 1) {
-                return Inertia::render("Notifications", [
-                    "notifications" => []
-                ]);
-            }
+            return Inertia::render("Notifications", [
+                "notifications" => $notifications
+            ]);
 
-            // get information about the sender, recipient, and aircraft profile
-            $notifiable = $notifiable->get();
-            $sender = DB::table("users")->select(["id", "name"])->where("id", "=", $notification->sender_id)->get();
-            $recipient = DB::table("users")->select(["id", "name"])->where("id", "=", $notification->recipient_id)->get();
-            $aircraft = DB::table("aircraft")->select(["id", "reg"])->where("id", "=", $notification->post_id)->get();
-
-            // add all this to an array that will be rendered on the page.
-            array_push($notifications, [
-                "notifiable" => $notifiable_type,
-                "notifiable_content" => $notifiable[0],
-                "aircraft" => $aircraft[0],
-                "sender" => $sender[0],
-                "recipient" => $recipient[0],
-                "date" => $notification->created_at,
-                "id" => $notification->id
+        } catch (Exception $e) {
+            dd($e);
+            return Inertia::render("Notifications", [
+                "notifications" => []
             ]);
         }
-
-        return Inertia::render("Notifications", [
-            "notifications" => $notifications
-        ]);
     }
 
     // API Routes
@@ -101,6 +125,10 @@ class NotificationsController extends Controller
         $aircraft_id = $request->input("aircraftId");
         $notifiable_id = $request->input("notifiableId");
         $notifiable_type = $request->input("notifiableType");
+
+        if ($recipient_id == $sender_id) {
+            return response("Nothing modified: Cannot send notification to yourself.", 304);
+        }
 
         // try store the notification and return the ID of the
         // new notification

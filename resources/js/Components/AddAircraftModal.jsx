@@ -4,13 +4,22 @@ import InputLabel from "@/Components/InputLabel";
 import TextInput from "@/Components/TextInput";
 import PrimaryButtonEvent from "@/Components/PrimaryButtonEvent";
 import FileUploadInput from "./FileUpload";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { addAircraft, editAircraft } from "@/utils/aircraft";
+import { getAircraftTags, getAllTags } from "@/utils/tag";
 
 const AIRCRAFT_IMAGE_TAG = "aircraft_image"
 
 export default function AddAircraftModal({ visibility, setVisibility, aircraft = {}, context }) {
+
+    useEffect(() => {
+        getTags();
+    }, [visibility])
+
+    const capitaliseFirstLetter = (string) => {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
 
     const [formState, setFormState] = useState({
         registration: aircraft.reg || "",
@@ -19,8 +28,30 @@ export default function AddAircraftModal({ visibility, setVisibility, aircraft =
         lat: aircraft.location_lat || 0,
         lng: aircraft.location_lng || 0,
     })
+
     const [aircraftImage, setAircraftImage] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [tags, setTags] = useState([]);
+    const [tagsCheckedState, setTagCheckedState] = useState({})
+
+    const handleTagCheck = (id) => {
+        const tagsState = !tagsCheckedState[id] || false;
+        setTagCheckedState({ ...tagsCheckedState, [id]: tagsState })
+    }
+
+    const getTags = async () => {
+        const tagsFromApi = await getAllTags();
+        setTags(tagsFromApi);
+        if (aircraft.id) {
+            const tags = await getAircraftTags(aircraft.id);
+            const aircraftTags = {}
+            for (const tag of tags) {
+                aircraftTags[tag.tag_id] = true;
+            }
+            setTagCheckedState(aircraftTags);
+            console.log(tagsCheckedState)
+        }
+    }
 
     const handleAircraftUpload = async () => {
         setLoading(true);
@@ -37,6 +68,7 @@ export default function AddAircraftModal({ visibility, setVisibility, aircraft =
             || formState.lng < -180
             || formState.lng > 180
             || (!aircraftImage && context === "Add")
+            || !Object.values(tagsCheckedState).includes(true)
         ) {
             Swal.fire({
                 icon: "error",
@@ -52,6 +84,11 @@ export default function AddAircraftModal({ visibility, setVisibility, aircraft =
         for (const key in formState) {
             formData.append(key, formState[key]);
         }
+
+        // append tags
+        const keys = Object.keys(tagsCheckedState);
+        formData.append("tags", keys.filter((key) => tagsCheckedState[key] === true))
+        console.log(formData);
 
         // determine whether this is an edit or a new aircraft
         if (context === "Edit") {
@@ -178,6 +215,34 @@ export default function AddAircraftModal({ visibility, setVisibility, aircraft =
                                 inputName={AIRCRAFT_IMAGE_TAG}
                                 accept="image/*"
                                 footerText="PNG or JPG (MAX 512MB)." />
+                        </div>
+                        <div>
+                            <InputLabel htmlFor="tag" className="text-white">Tags</InputLabel>
+                            <div className="flex flex-wrap justify-start gap-3 mt-1">
+                                {
+                                    tags.map((tag, index) => {
+                                        return (
+                                            <div key={index} className="flex items-center mb-4">
+                                                <input defaultChecked={ tagsCheckedState[tag.id] } onClick={() => handleTagCheck(tag.id)} id={ `${tag.name}-checkbox` } type="checkbox" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                                <label htmlFor={`${tag.name}-checkbox`} className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">{tag.name}</label>
+                                            </div>
+                                        )
+                                    })
+                                }
+                            </div>
+                            {/* <select id="countries"
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 mt-1"
+                                onChange={(e) => setFormState({ ...formState, tag: e.target.value })}
+                                value={formState.tag}>
+                                {
+                                    tags.map((tag, index) => {
+                                        return (
+                                            <option key={index} value={tag.id}>{ tag.name }</option>
+                                        )
+                                    })
+                                }
+                            </select> */}
+
                         </div>
                     </div>
                     <div className="flex gap-3 justify-center">

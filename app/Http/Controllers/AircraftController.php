@@ -76,6 +76,7 @@ class AircraftController extends Controller
         $model = $request->model;
         $lat = $request->lat;
         $lng = $request->lng;
+        $tags = explode(",", $request->tags);
 
         // validate the image
         // max 512mb
@@ -114,6 +115,9 @@ class AircraftController extends Controller
                 "user_id" => $user->id,
                 "created_at" => date("Y-m-d H:i:s")
             ]);
+            foreach ($tags as $tag) {
+                DB::table("aircraft_tags")->insert(["aircraft_id" => $new_aircraft_id, "tag_id" => $tag]);
+            }
             return response()->json([
                 "status" => "success",
                 "payload" => $new_aircraft_id
@@ -135,8 +139,14 @@ class AircraftController extends Controller
      */
     public function show(string $id)
     {
-        $aircraft = DB::table("aircraft")->select("*")->where("id", "=", $id)->get();
-        return json_decode($aircraft);
+        $aircraft = DB::table("aircraft")->select("*")->where("id", "=", $id);
+        if ($aircraft->count() < 1) {
+            return response()->json([
+                "status" => "error",
+                "message" => "Aircraft not found."
+            ], 404);
+        }
+        return json_decode($aircraft->get());
     }
 
     /**
@@ -150,7 +160,7 @@ class AircraftController extends Controller
         $aircraft_id = $request->query("aircraftId");
         $aircraft = DB::table("aircraft")->where("id", "=", $aircraft_id);
         $aircraft_owner = $aircraft->select("user_id")->get();
-        $requestee_role = DB::table("users")->select("role")->where("id", "=", $request->user()->id)->get();
+        $requestee_role = DB::table("profiles")->select("role")->where("id", "=", $request->user()->id)->get();
 
         // no aircraft found.
         if ($aircraft->select("*")->count() < 1) {
@@ -175,6 +185,7 @@ class AircraftController extends Controller
         $lat = $request->lat;
         $lng = $request->lng;
         $new_image = $request->imageAttached;
+        $new_tags = explode(",", $request->tags);
 
         $new_image_name = "";
 
@@ -229,6 +240,17 @@ class AircraftController extends Controller
                 ->update(["reg" => $reg, "make" => $make, "model" => $model, "location_lat" => $lat, "location_lng" => $lng]);
             }
 
+            $current_tags = DB::table("aircraft_tags")->select("id")->where("aircraft_id", "=", $aircraft_id)->get();
+            $current_tags = (array) $current_tags;
+
+            // delete all current tags
+            DB::table("aircraft_tags")->where("aircraft_id", "=", $aircraft_id)->delete();
+
+            // add tags
+            foreach ($new_tags as $tag) {
+                DB::table("aircraft_tags")->insert(["aircraft_id" => $aircraft_id, "tag_id" => $tag]);
+            }
+
             // return the new aircraft
             $new_aircraft = DB::table("aircraft")->select("*")->where("id", "=", $aircraft_id)->get();
             return response()->json([
@@ -238,6 +260,7 @@ class AircraftController extends Controller
 
         // error updating data.
         } catch (Exception $e) {
+            // dd($e);
             return response()->json([
                 "status" => "error",
                 "message" => "Could not update aircraft."
@@ -257,7 +280,7 @@ class AircraftController extends Controller
         $aircraft_id = $request->query("aircraftId");
         $aircraft = DB::table("aircraft")->select("user_id")->where("id", "=", $aircraft_id);
         $aircraft_owner = $aircraft->get();
-        $requestee_role = DB::table("users")->select("role")->where("id", "=", $user_id)->get();
+        $requestee_role = DB::table("profiles")->select("role")->where("id", "=", $user_id)->get();
 
         // no aircraft found matching filter
         if ($aircraft->count() < 1) {
@@ -295,13 +318,17 @@ class AircraftController extends Controller
     /**
      * Get the profile page for an aircraft profile.
      *
+     * @param request HTTP request object.
      * @param aircraft_id
      */
-    public function aircraftPage(int $aircraft_id)
+    public function aircraftPage(Request $request, int $aircraft_id)
     {
         $aircraft = DB::table("aircraft")->select("*")->where("id", "=", $aircraft_id)->get();
+        $profile = DB::table("profiles")->select(["role", "name"])->where("id", "=", $request->user()->id)->get();
+
         return Inertia::render("Aircraft", [
-            "aircraft" => $aircraft[0]
+            "aircraft" => $aircraft[0],
+            "admin" => $profile[0]->role == "Admin"
         ]);
     }
 

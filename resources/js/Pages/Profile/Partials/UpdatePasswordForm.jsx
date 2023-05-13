@@ -28,6 +28,8 @@ export default function UpdatePasswordForm({ className = '' }) {
                 Swal.fire({
                     icon: "success",
                     text: "Password has been updated."
+                }).then(() => {
+                    window.location.reload(false);
                 })
                 setLoading(false);
             }).catch((err) => {

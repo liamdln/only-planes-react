@@ -21,13 +21,13 @@ export default function DeleteUser({ className = '', user }) {
     const deleteUser = async (e) => {
         e.preventDefault();
         setLoading(true);
-        await httpDelete(`/api/profile/delete?userId=${user.id}`).then((res) => {
+        await httpDelete(`/api/user/delete?userId=${user.id}`).then((res) => {
             setLoading(false);
             Swal.fire({
                 icon: "success",
                 text: "User has been deleted."
             }).then(() => {
-                document.location.href = "/profile";
+                document.location.href = "/";
             })
         }).catch((err) => {
             Swal.fire({

@@ -9,6 +9,9 @@ use App\Models\Aircraft;
 use App\Models\Comment;
 use App\Models\Notifications;
 use App\Models\Opinion;
+use App\Models\Profile;
+use App\Models\Tag;
+use Database\Factories\TagAircraftFactory;
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,13 +21,44 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $numUsers = 10;
+        $tags = ["Commercial", "General Aviation", "Military"];
+
+        foreach ($tags as $tag) {
+            Tag::factory()->create([
+                "name" => $tag
+            ]);
+        }
 
         User::factory($numUsers)->create()->each(function ($user) {
+
+            // create a profile
+            Profile::factory(1)->create(["id" => $user->id]);
+
             // create random number of aircraft per user.
-            Aircraft::factory(fake()->randomDigitNotZero())->create(["user_id" => $user->id]);
+            Aircraft::factory(fake()->randomDigitNotZero())->create(["user_id" => $user->id])->each(function ($aircraft) {
+                // add some random tags
+                $random_number = rand(1, 3);
+                $used_tag_ids = [];
+                for (
+                    $i = 0;
+                    $i < $random_number;
+                    $i++
+                ) {
+                    $tag_id = Tag::inRandomOrder()->first()->id;
+                    if (!in_array($tag_id, $used_tag_ids)) {
+                        $aircraft->tags()->attach($tag_id);
+                        array_push(
+                            $used_tag_ids,
+                            $tag_id
+                        );
+                    }
+                }
+            });
+
+            // get random data
+            $random_aircraft = Aircraft::inRandomOrder()->first();
 
             // should we add an opinion, skip if user owns aircraft?
-            $random_aircraft = Aircraft::inRandomOrder()->first();
 
             // should we create comments on this aircraft (run per user)?
             $create_comments = fake()->randomElement([true, false]);

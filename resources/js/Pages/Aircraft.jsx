@@ -10,7 +10,7 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 
 
-export default function Aircraft({ auth, aircraft }) {
+export default function Aircraft({ auth, aircraft, admin }) {
 
     const [showModal, setShowModal] = useState(false);
 
@@ -53,7 +53,7 @@ export default function Aircraft({ auth, aircraft }) {
                 <div className="w-full flex justify-center">
                     <Profile aircraft={aircraft}>
                         {
-                            aircraft.user_id === auth.user.id || auth.user.role === "Admin"
+                            aircraft.user_id === auth.user.id || admin
                                 ?
                                 <div className="flex gap-3 justify-center">
                                     <DangerButtonEvent onClick={() => handleDeleteAircraft()}>Delete Aircraft</DangerButtonEvent>
